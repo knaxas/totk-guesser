@@ -1,0 +1,53 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>TotK Guesser</title>
+    <link rel="shortcut icon" type="x-icon" href="assets/images/icons/korokmask.png">
+    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="author" content="Maxas">
+    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+
+
+    <link rel="stylesheet" href="assets/libraries/leaflet/leaflet.min.css">
+    <script src="assets/libraries/leaflet/leaflet.min.js"></script>
+    <link rel="stylesheet" href="assets/libraries/leaflet.markercluster/MarkerCluster.css">
+    <script src="assets/libraries/leaflet.markercluster/leaflet.markercluster.min.js"></script>
+    <script src="assets/libraries/jquery/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="play/app.css">
+    <script src="play/app.js" defer></script>
+</head>
+<body>
+    <div class="fw-container">
+        <div id="sidebar">
+            <div id="data-display">
+                <div id="imageTurn">IMG: <x style="color: red;">1</x>/5</div>
+                <div id="score">SCORE: 0</div>
+                <div id="customMessage">Where could this be?</div>
+            </div>
+            <div class="map-switcher">
+                <button id="show-layer-sky" type="button">Sky</button>
+                <button id="show-layer-surface" type="button">Surface</button>
+                <button id="show-layer-depths" type="button">Depths</button>
+                <button id="submit-marker">Submit</button>
+                <!--<button onclick="endGame()" style="color: red;">Debug Btn</button>-->
+
+            <div class="credit-container">
+                <div>Made with</div>
+                <div><img height="160px" src="assets/images/icons/Obj_HeartUtuwa_A_01.png" alt=""></div>
+                <div>By Maxas</div>
+            </div>
+            </div>
+
+        </div>
+    
+        <div id="image-container" class="image-container">
+            <img id="location-image" src="" alt="Guess the Image">
+        </div>
+    
+        <div id="totk-map" class="totkMapC"></div>
+
+</body>
+</html>

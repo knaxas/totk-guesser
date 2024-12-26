@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TotK Guesser Credits</title>
+    <link rel="shortcut icon" type="x-icon" href="/assets/images/icons/korokmask.png">
+    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="author" content="Maxas">
+    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+</head>
+<body>
+    <div id="people"></div>
+
+    <script>
+        async function loadContributionPeople() {
+            const response = await fetch("/assets/libraries/credits.json");
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+            const data = await response.json();
+            const peopleHTML = data.names.map(name => `<li>${name}</li>`).join("");
+    
+            document.getElementById("people").innerHTML = `<ul>${peopleHTML}</ul>`;
+        }
+        loadContributionPeople();
+    </script>
+</body>
+</html>

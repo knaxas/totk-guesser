@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TotK Guesser Home</title>
+    <link rel="shortcut icon" type="x-icon" href="assets/images/icons/korokmask.png">
+    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="author" content="Maxas">
+    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+</head>
+<body>
+    <style>
+        @font-face {
+    font-family: 'ZeldaFont';
+    src: url('/assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
+}
+
+      body {
+        background-image: url("assets/images/totkBackground.png");
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .image-container {
+        position: relative;
+        width: 80%;
+        height: 60%;
+        background-color: black;
+        border: 5px solid #000;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+      }
+
+      .left-content {
+        flex: 4;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        padding: 1rem;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        border-top-left-radius: 15px;
+        border-bottom-left-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      }
+
+      .left-content h1 {
+        font-family: 'ZeldaFont', sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .left-content .inputs {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .left-content input,
+      .left-content button {
+        width: 80%;
+        padding: 0.7rem;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        font-size: 1rem;
+      }
+
+      .left-content input {
+        background-color: #333;
+        color: white;
+        text-align: center;
+      }
+
+      .left-content input[disabled] {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .left-content button {
+        font-weight: 600;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #7f53ac, #647dee);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .left-content button:hover {
+        background: linear-gradient(135deg, #647dee, #7f53ac);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        transform: scale(1.03);
+      }
+
+      .left-content button:active {
+        background: linear-gradient(135deg, #5a4c9b, #4a6fcd);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transform: scale(0.98);
+      }
+
+      .right-content {
+        flex: 1;
+        background-color: #111;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        border-top-right-radius: 15px;
+        border-bottom-right-radius: 15px;
+      }
+
+      .right-content img {
+        max-width: 50%;
+        max-height: 90%;
+        object-fit: contain;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+      }
+
+      @media screen and (max-width: 768px) {
+        .image-container {
+          flex-direction: column;
+        }
+
+        .left-content,
+        .right-content {
+          width: 100%;
+          flex: none;
+        }
+
+        .left-content {
+          border-radius: 0;
+        }
+
+        .right-content img {
+          max-width: 70%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="image-container">
+      <div class="left-content">
+        <h1>Welcome to the TotK-Guesser!</h1>
+        <div class="inputs">
+          <input
+            style="cursor: not-allowed;"
+            title="Not available yet"
+            disabled
+            type="text"
+            placeholder="Seed"
+          />
+          <p style="margin: 0; color: #fff;">Rounds:</p>
+          <input id="playableRounds" type="number" value="5" max="15" min="3" placeholder="Rounds" />
+          <p>Du kannst grad nur die Anzahl der Runden einstellen, aber das sind so Sachen, um die ich mich später kümmere</p>
+        </div>
+        <button id="applyChanges">Start</button>
+      </div>
+      <div class="right-content">
+        <img src="assets/images/icons/PutRupee_Red.png" alt="Bild" />
+        <img src="assets/images/icons/PutRupee_Gold.png" alt="Bild" />
+        <img src="assets/images/icons/PutRupee.png" alt="Bild" />
+      </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById("applyChanges");
+
+        btn.addEventListener("click", () => {
+            localStorage.setItem("maxRounds", document.getElementById("playableRounds").value)
+            window.location = "/guess"
+        })
+    </script>
+</body>
+</html>

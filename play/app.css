@@ -1,0 +1,228 @@
+:root {
+    --bg-colour: #2e2e2e;
+    --map-bg-colour: #000000;
+    --text-colour: #efefef;
+    --gray-text-colour: #afafaf;
+    --divider-colour: #3e3e3e;
+    --divider-thickness: 2px;
+    --border-radius: 3px;
+}
+
+@font-face {
+    font-family: 'ZeldaFont';
+    src: url('assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    color: var(--text-colour);
+}
+
+body {
+    width: 100%;
+    height: 110%;
+    background-image: url("assets/images/totkBackground.png");
+    z-index: -1;
+}
+
+
+.fw-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+}
+
+#sidebar {
+    overflow: hidden;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    width: 14%;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+#data-display {
+    text-align: center;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+#imageTurn, #score, #customMessage {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    background: linear-gradient(135deg, #7f53ac, #647dee);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 26px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.map-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 15px;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    width: 100%;
+}
+
+.map-switcher button {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 0.5em;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7f53ac, #647dee);
+    color: white;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.map-switcher button:hover {
+    background: linear-gradient(135deg, #647dee, #7f53ac);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    transform: scale(1.03);
+}
+
+.map-switcher button:active {
+    background: linear-gradient(135deg, #5a4c9b, #4a6fcd);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: scale(0.98);
+}
+
+.credit-container {
+    text-align: center;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+}
+
+
+.image-container {
+    position: relative;
+    width: 75%;
+    margin: auto;
+    display: inline-block;
+    z-index: 1;
+    padding: 5px;
+}
+
+.image-container img {
+    margin-top: -50px;
+    width: 100%;
+    height: auto;
+    display: block;
+    position: relative;
+    z-index: 1;
+    border-radius: 30px;
+}
+
+#totk-map {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 70%;
+    height: 85%;
+    background: var(--map-bg-colour);
+    border: 2px solid purple;
+    z-index: 2;
+    border-radius: 20px;
+}
+
+.credit-container {
+    text-align: center;
+    margin-top: 70px;
+    font-family: 'ZeldaFont', sans-serif;
+    font-size: xx-large;
+}
+
+
+@media screen and (max-width: 768px) {
+    .fw-container {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        height: 130px;
+        border-radius: 0 0 20px 20px;
+        position: fixed;
+        top: 0;
+        left: -28px;
+        z-index: 10;
+        padding-top: 30px;
+    }
+
+    #totk-map {
+        width: 60%;
+        height: 10%;
+        bottom: 10%;
+        right: 20%;
+    }
+
+    .image-container {
+        width: 90%;
+    }
+
+    #data-display {
+        padding: 10px;
+        width: 90%;
+    }
+
+    #imageTurn, #score, #customMessage {
+        font-size: 14px; 
+        margin-bottom: 15px;
+    }
+
+    .map-switcher {
+        padding: 10px;
+    }
+
+    .map-switcher button {
+        font-size: 16px;
+        padding: 0.6em;
+    }
+
+    .credit-container {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #totk-map {
+        width: 80%;
+        height: 15%;
+        bottom: 5%;
+        right: 10%;
+    }
+}
