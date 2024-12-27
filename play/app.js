@@ -7,7 +7,11 @@ let x,
   score = 0,
   distance = 0;
 let imageRound = 1;
-let maxImages = localStorage.getItem("maxRounds") || 5;
+let maxImages = parseInt(localStorage.getItem("maxRounds"), 10) || 5;
+if (isNaN(maxImages) || maxImages < 3 || maxImages > 15) {
+  maxImages = 5;
+  localStorage.setItem("maxRounds", 5);
+}
 let markerSet = false;
 
 window.addEventListener("load", () => {
@@ -68,7 +72,7 @@ window.addEventListener("load", () => {
       totkMap.style.height = size.defaultHeight;
     }
   });
-  document.body.style.backgroundImage = "url(assets/images/totkBackground.png)"
+  document.body.style.backgroundImage = "url(assets/images/totkBackground.png)";
   document.getElementById(
     "imageTurn"
   ).innerHTML = `IMG: <x style="color: red;">1</x>/${maxImages}`;
@@ -107,7 +111,7 @@ window.addEventListener("load", () => {
   const lineLayer = L.layerGroup();
   const layers = {
     sky: L.imageOverlay("assets/images/maps/sky.jpg", bounds),
-    surface: L.imageOverlay("assets/images/maps/surface.jpg", bounds),
+    surface: L.imageOverlay("assets/images/maps/surface/surface.jpg", bounds),
     depths: L.imageOverlay("assets/images/maps/depths.jpg", bounds),
   };
 
@@ -180,25 +184,64 @@ window.addEventListener("load", () => {
 
   async function loadLocationData() {
     try {
-      const response = await fetch(`assets/images/locations/locations.json`);
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
+        let difficulty = localStorage.getItem("difficulty") || "hard";
+        const validDifficulties = ["easy", "medium", "hard"];
+        if (!validDifficulties.includes(difficulty)) {
+            difficulty = "hard";
+            localStorage.setItem("difficulty", "hard");
+        }
 
-      const imageCount = Object.keys(data).length;
-      const imageKey = `img${Math.floor(Math.random() * imageCount) + 1}`;
+        const allowedLayers = {
+            easy: ["surface"],
+            medium: ["surface", "sky"],
+            hard: ["surface", "sky", "depths"],
+        }[difficulty];
 
-      const [layer, x, y] = data[imageKey].split("_");
-      layerImage = layer;
-      xImage = parseInt(x, 10);
-      yImage = parseInt(y, 10);
+        const layerButtons = {
+            sky: document.getElementById("show-layer-sky"),
+            surface: document.getElementById("show-layer-surface"),
+            depths: document.getElementById("show-layer-depths"),
+        };
 
-      document.getElementById(
-        "location-image"
-      ).src = `assets/images/locations/${imageKey}.png`;
+        Object.keys(layerButtons).forEach((layer) => {
+            if (allowedLayers.includes(layer)) {
+                layerButtons[layer].style.display = "inline-block";
+            } else {
+                layerButtons[layer].style.display = "none";
+            }
+        });
+
+        const response = await fetch(`assets/images/locations/locations.json`);
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        const data = await response.json();
+
+        // Bilder aus Schwierigkeit filtern
+        const filteredKeys = Object.keys(data).filter((key) => {
+            const [layer] = data[key].split("_");
+            return allowedLayers.includes(layer);
+        });
+
+        if (filteredKeys.length === 0) {
+            throw new Error(
+                "Keine passenden Bilder für die aktuelle Schwierigkeit gefunden."
+            );
+        }
+
+        const imageKey =
+            filteredKeys[Math.floor(Math.random() * filteredKeys.length)];
+
+        const [layer, x, y] = data[imageKey].split("_");
+        layerImage = layer;
+        xImage = parseInt(x, 10);
+        yImage = parseInt(y, 10);
+
+        document.getElementById(
+            "location-image"
+        ).src = `assets/images/locations/${imageKey}.png`;
     } catch (error) {
-      console.error("Fehler beim Laden der Daten:", error);
+        console.error("Fehler beim Laden der Daten:", error);
     }
-  }
+}
 
   function calculateScore(x, y, xImage, yImage) {
     distance = Math.sqrt(Math.pow(x - xImage, 2) + Math.pow(y - yImage, 2));
