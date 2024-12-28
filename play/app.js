@@ -1,18 +1,20 @@
-let x,
-  y,
-  xImage,
-  yImage,
-  layerImage,
-  currentLayer,
-  score = 0,
-  distance = 0;
-let imageRound = 1;
+let x, y, xImage, yImage, layerImage, currentLayer;
+let score = 0, distance = 0, imageRound = 1;
 let maxImages = parseInt(localStorage.getItem("maxRounds"), 10) || 5;
+
 if (isNaN(maxImages) || maxImages < 3 || maxImages > 15) {
   maxImages = 5;
   localStorage.setItem("maxRounds", 5);
 }
+
 let markerSet = false;
+
+let scale = 1;
+let translateX = 0, translateY = 0;
+const zoomSpeed = 0.3;
+
+let isDragging = false;
+let dragStartX = 0, dragStartY = 0;
 
 window.addEventListener("load", () => {
   let hoverableMap = true;
@@ -77,10 +79,76 @@ window.addEventListener("load", () => {
     "imageTurn"
   ).innerHTML = `IMG: <x style="color: red;">1</x>/${maxImages}`;
 
+  (function () {
+    const container = document.getElementById("image-container");
+    const img = document.getElementById("location-image");
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function updateTransform() {
+        img.style.transform = `scale(${scale}) translate(${translateX / scale}px, ${translateY / scale}px)`;
+    }
+
+    container.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+        const newScale = Math.max(1, scale + delta);
+        const rect = img.getBoundingClientRect();
+        const offsetX = (e.clientX - rect.left) / rect.width;
+        const offsetY = (e.clientY - rect.top) / rect.height;
+
+        translateX += (offsetX - 0.5) * (scale - newScale) * rect.width;
+        translateY += (offsetY - 0.5) * (scale - newScale) * rect.height;
+        scale = newScale;
+
+        const maxTranslateX = ((scale - 1) * rect.width) / 2;
+        const maxTranslateY = ((scale - 1) * rect.height) / 2;
+        translateX = clamp(translateX, -maxTranslateX, maxTranslateX);
+        translateY = clamp(translateY, -maxTranslateY, maxTranslateY);
+
+        updateTransform();
+    });
+
+    window.addEventListener("mousedown", (e) => {
+        if (!container.contains(e.target)) return;
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        container.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+
+        translateX += dx;
+        translateY += dy;
+
+        const rect = img.getBoundingClientRect();
+        const maxTranslateX = ((scale - 1) * rect.width) / 2;
+        const maxTranslateY = ((scale - 1) * rect.height) / 2;
+        translateX = clamp(translateX, -maxTranslateX, maxTranslateX);
+        translateY = clamp(translateY, -maxTranslateY, maxTranslateY);
+
+        updateTransform();
+
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+    });
+
+    window.addEventListener("mouseup", () => {
+        isDragging = false;
+        container.style.cursor = "grab";
+    });
+})();
+
   const mapConfig = {
     preferCanvas: true,
     minZoom: -3,
-    maxZoom: 4,
+    maxZoom: 0,
     center: [1800, -3450],
     zoom: -3,
     cursor: true,
@@ -111,7 +179,7 @@ window.addEventListener("load", () => {
   const lineLayer = L.layerGroup();
   const layers = {
     sky: L.imageOverlay("assets/images/maps/sky.jpg", bounds),
-    surface: L.imageOverlay("assets/images/maps/surface.jpg", bounds),
+    surface: L.imageOverlay("assets/images/maps/surface/surface.jpg", bounds),
     depths: L.imageOverlay("assets/images/maps/depths.jpg", bounds),
   };
 
@@ -136,7 +204,7 @@ window.addEventListener("load", () => {
     y = Math.round(e.latlng.lat);
 
     cursorMarker
-      .setLatLng(e.latlng)
+      .setLatLng([e.latlng.lat + 0, e.latlng.lng + 4])
       .bindPopup(generateMarkerPopup("Marker Position", x, y))
       .openPopup()
       .addTo(map);
@@ -144,6 +212,7 @@ window.addEventListener("load", () => {
     markerSet = true;
     document.getElementById("submit-marker").disabled = false;
   }
+
 
   function updateLocations() {
     if (currentLayer !== "surface") {
@@ -327,6 +396,16 @@ window.addEventListener("load", () => {
       map.setView([1800, -3450], map.getZoom());
       loadNewImage();
 
+      function resetImageZoom() {
+        document.getElementById("location-image").style.transform = `scale(1) translate(0px, 0px)`;
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        isDragging = false;
+        dragStartX = 0;
+        dragStartY = 0;
+      }
+      resetImageZoom();
       document.getElementById(
         "imageTurn"
       ).innerHTML = `IMG: <span style="color: red;">${imageRound}</span>/${maxImages}`;
@@ -410,57 +489,73 @@ function endGame() {
 
   const createOverlay = () => {
     const imageContainer = document.getElementById("image-container");
-
+  
     const overlay = document.createElement("div");
-    overlay.style.position = "absolute";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.display = "flex";
-    overlay.style.flexDirection = "column";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "10";
-
+    overlay.classList.add("overlay");
+  
     const textDiv = document.createElement("div");
-    textDiv.style.fontSize = "20px";
-    textDiv.style.color = "white";
-    textDiv.style.marginBottom = "20px";
-    textDiv.style.textAlign = "center";
-    textDiv.id = "overlay-text";
-
+    textDiv.classList.add("overlay-text");
+    textDiv.innerHTML = "0";
+    overlay.appendChild(textDiv);
+  
     const buttonDiv = document.createElement("div");
-    buttonDiv.style.textAlign = "center";
-
+    buttonDiv.classList.add("button-div");
+  
     const button = document.createElement("button");
     button.textContent = "Play Again";
-    button.style.padding = "10px 20px";
-    button.style.fontSize = "16px";
-    button.style.cursor = "pointer";
-    button.style.border = "none";
-    button.style.backgroundColor = "#007BFF";
-    button.style.color = "white";
-    button.style.borderRadius = "5px";
+    button.classList.add("button");
     button.addEventListener("click", () => {
-      alert("ich weiß es sieht noch beschissen aus");
       location.reload();
     });
-
+  
     buttonDiv.appendChild(button);
-    overlay.appendChild(textDiv);
     overlay.appendChild(buttonDiv);
-
+  
     imageContainer.appendChild(overlay);
+  
+    let scoreColor;
+    function getScoreColor() {
+      if (localStorage.getItem("difficulty") == "easy") {
+        scoreColor = "#11a832";
+      } else if (localStorage.getItem("difficulty") == "medium") {
+        scoreColor = "yellow";
+      } else if (localStorage.getItem("difficulty") == "hard") {
+        scoreColor = "red";
+      }
+    }
+    getScoreColor();
+    let currentScore = 0;
+    const scoreElement = textDiv;
+    const targetScore = score;
+    const totalDuration = 1700;
+    const animationStartTime = Date.now();
+  
+    const animateScore = () => {
+      const elapsedTime = Date.now() - animationStartTime;
+      const progress = elapsedTime / totalDuration;
+  
+      if (progress < 1) {
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        currentScore = Math.round(easeProgress * targetScore);
+        scoreElement.innerHTML = `Out of <y style="color: #0ba6d9;">${maxImages} Images</y> you got<br><x style="color: ${scoreColor};">${currentScore}</x> points`;
+  
+        requestAnimationFrame(animateScore);
+      } else {
+        scoreElement.innerHTML = `Out of <y style="color: #0ba6d9;">${maxImages} Images</y> you got<br><x style="color: ${scoreColor};">${targetScore}</x> points`;
+        setTimeout(() => {
+          buttonDiv.style.opacity = "1";
+        }, 500);
+      }
+    };
+  
+    setTimeout(() => {
+      scoreElement.style.opacity = "1";
+      animateScore();
+    }, 500);
   };
 
   setTimeout(() => {
     createOverlay();
     fadeOutContent();
   }, 3000);
-
-  setTimeout(() => {
-    const overlayText = document.getElementById("overlay-text");
-    overlayText.innerHTML = `Your score is ${score}`;
-  }, 5000);
 }
