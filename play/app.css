@@ -133,16 +133,22 @@ body {
     display: inline-block;
     z-index: 1;
     padding: 5px;
+    overflow: hidden;
+    cursor: grab;
 }
 
 .image-container img {
-    margin-top: -50px;
     width: 100%;
     height: auto;
     display: block;
     position: relative;
     z-index: 1;
     border-radius: 30px;
+    transform-origin: center;
+    transform: scale(1) translate(0px, 0px);
+    transition: transform 0.1s ease-out;
+    user-select: none;
+    cursor: grab;
 }
 
 #totk-map {
@@ -225,3 +231,60 @@ body {
         right: 10%;
     }
 }
+
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  
+  .overlay-text {
+    font-size: 50px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 30px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 1s ease-out;
+  }
+  
+  .button-div {
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1s ease-out;
+  }
+  
+  .button {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .button:active {
+    background-color: #004085;
+    transform: translateY(2px);
+  }
