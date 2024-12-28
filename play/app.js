@@ -179,7 +179,7 @@ window.addEventListener("load", () => {
   const lineLayer = L.layerGroup();
   const layers = {
     sky: L.imageOverlay("assets/images/maps/sky.jpg", bounds),
-    surface: L.imageOverlay("assets/images/maps/surface/surface.jpg", bounds),
+    surface: L.imageOverlay("assets/images/maps/surface.jpg", bounds),
     depths: L.imageOverlay("assets/images/maps/depths.jpg", bounds),
   };
 
