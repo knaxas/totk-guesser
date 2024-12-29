@@ -27,6 +27,7 @@
                 <div id="imageTurn">IMG: <x style="color: red;">1</x>/5</div>
                 <div id="score">SCORE: 0</div>
                 <div id="customMessage">Where could this be?</div>
+                <div id="restart" onclick="restart()">Restart</div>
             </div>
             <div class="map-switcher">
                 <button id="show-layer-sky" type="button">Sky</button>
@@ -50,5 +51,11 @@
     
         <div id="totk-map" class="totkMapC"></div>
 
+        <script>
+            function restart() {
+                const baseUrl = window.location.href.split('?')[0];
+                window.location = baseUrl
+            }
+        </script>
 </body>
 </html>
