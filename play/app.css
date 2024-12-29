@@ -59,7 +59,21 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
-#imageTurn, #score, #customMessage {
+#imageTurn, #score, #customMessage  {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    background: linear-gradient(135deg, #7f53ac, #647dee);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 26px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#restart {
     font-family: 'Arial', sans-serif;
     font-weight: bold;
     text-align: center;
