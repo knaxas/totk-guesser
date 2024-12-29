@@ -21,155 +21,205 @@
     src: url('assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
 }
 
-      body {
-        background-image: url("assets/images/totkBackground.png");
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
+body {
+  background-image: url("assets/images/totkBackground.png");
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: "Roboto", sans-serif;
+}
 
-      .image-container {
-        position: relative;
-        width: 80%;
-        height: 60%;
-        background-color: black;
-        border: 5px solid #000;
-        border-radius: 15px;
-        overflow: hidden;
-        display: flex;
-      }
+.image-container {
+  position: relative;
+  width: 80%;
+  height: 60%;
+  background-color: black;
+  border: 5px solid #000;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+}
 
-      .left-content {
-        font-family: "Roboto", serif;
-        font-weight: 800;
-        flex: 4;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        color: white;
-        padding: 1rem;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
-        border-top-left-radius: 15px;
-        border-bottom-left-radius: 15px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-      }
+.left-content {
+  flex: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+  text-align: center;
+}
 
-      .left-content h1 {
-        font-family: 'ZeldaFont', sans-serif;
-        font-size: 3rem;
-        font-weight: 700;
-        margin: 0;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
+.left-content h1 {
+  font-family: 'ZeldaFont', sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-      .left-content .inputs {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        width: 100%;
-      }
+.left-content .inputs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
 
-      .left-content input,
-      .left-content button {
-        width: 80%;
-        padding: 0.7rem;
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-        font-size: 1rem;
-      }
+.left-content input,
+.left-content button {
+  width: 90%;
+  max-width: 80%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
 
-      .left-content input {
-        background-color: #333;
-        color: white;
-        text-align: center;
-      }
+.left-content input {
+  background-color: #333;
+  color: white;
+  text-align: center;
+}
 
-      .left-content input[disabled] {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
+.left-content input[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
-      .left-content button {
-        font-weight: 600;
-        text-transform: uppercase;
-        background: linear-gradient(135deg, #7f53ac, #647dee);
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
+.left-content button {
+  font-weight: 600;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #7f53ac, #647dee);
+  color: white;
+  cursor: pointer;
+}
 
-      .left-content button:hover {
-        background: linear-gradient(135deg, #647dee, #7f53ac);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        transform: scale(1.03);
-      }
+.left-content button:hover {
+  background: linear-gradient(135deg, #647dee, #7f53ac);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
 
-      .left-content button:active {
-        background: linear-gradient(135deg, #5a4c9b, #4a6fcd);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        transform: scale(0.98);
-      }
+.right-content {
+  flex: 1;
+  background-color: #111;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  gap: 1rem;
+}
 
-      .right-content {
-        flex: 1;
-        background-color: #111;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 1rem;
-        border-top-right-radius: 15px;
-        border-bottom-right-radius: 15px;
-      }
+.right-content p {
+  letter-spacing: 2px;
+  font-family: 'ZeldaFont', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-      .right-content p {
-        letter-spacing: 2px;
-        font-family: 'ZeldaFont', sans-serif;
-        font-size: 2.8rem;
-        font-weight: 700;
-        margin: 0;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
+.right-content img {
+  max-width: 130px;
+  object-fit: contain;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
 
-      .right-content img {
-        max-width: 50%;
-        max-height: 90%;
-        object-fit: contain;
-        border-radius: 10px;
-        cursor: pointer;
-        margin-bottom: 1rem;
-      }
-      .first-image {
-        filter: drop-shadow(0 0 0.75rem rgb(255, 217, 0));
-      }
+.right-content img:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
 
-      @media screen and (max-width: 768px) {
-        .image-container {
-          flex-direction: column;
-        }
+.first-image {
+  filter: drop-shadow(0 0 0.75rem rgb(255, 217, 0));
+}
 
-        .left-content,
-        .right-content {
-          width: 100%;
-          flex: none;
-        }
+.input-wrapper {
+  position: relative;
+  width: 90%;
+  max-width: 80%;
+  margin-bottom: 20px;
+}
 
-        .left-content {
-          border-radius: 0;
-        }
+.input-wrapper input {
+  width: 100%;
+  padding: 0.7rem 0.7rem 0.7rem 2.5rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  font-size: 1rem;
+}
 
-        .right-content img {
-          max-width: 70%;
-        }
-      }
+.input-icon-inside {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  box-shadow: 0 0 8px rgba(100, 149, 237, 0.8);
+}
+
+.input-wrapper input[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media screen and (max-width: 768px) {
+  .image-container {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    margin-top: 1rem;
+  }
+
+  .left-content {
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    margin-bottom: 1rem;
+  }
+
+  .right-content {
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .right-content img {
+    max-width: 50px;
+    max-height: 50px;
+  }
+
+  .right-content p {
+    font-size: 1.5rem;
+  }
+}
     </style>
   </head>
   <body>
@@ -177,15 +227,21 @@
       <div class="left-content">
         <h1>Welcome to the TotK-Guesser!</h1>
         <div class="inputs">
-          <input
-            style="cursor: not-allowed;"
-            title="Not available yet"
-            disabled
-            type="text"
-            placeholder="Seed"
-          />
-          <p style="margin: 0; color: #fff;">Rounds:</p>
-          <input id="playableRounds" type="number" value="5" max="15" min="3" placeholder="Rounds" />
+          <div class="input-wrapper">
+            <img src="assets/images/icons/Obj_KorokNuts.png" alt="Seed Icon" class="input-icon-inside" />
+            <input
+              style="cursor: not-allowed;"
+              title="Not available yet"
+              disabled
+              type="text"
+              placeholder="Seed"
+            />
+          </div>
+          <p style="margin: 0; color: #fff; font-family: 'ZeldaFont', sans-serif; font-size: xx-large;">Rounds:</p>
+          <div class="input-wrapper">
+            <img src="assets/images/icons/Obj_TreasureMap_00.png" alt="Rounds Icon" class="input-icon-inside" />
+            <input id="playableRounds" type="number" value="5" max="15" min="3" placeholder="Rounds" />
+          </div>
         </div>
         <button onclick="startGame()" id="applyChanges">Start</button>
       </div>
