@@ -1,6 +1,7 @@
 let x, y, xImage, yImage, layerImage, currentLayer;
 let score = 0, distance = 0, imageRound = 1;
-let maxImages = parseInt(localStorage.getItem("maxRounds"), 10) || 5;
+let maxImages = parseInt(localStorage.getItem("maxRounds"), 10) || localStorage.setItem("maxRounds", 5);
+let difficulty = localStorage.getItem("difficulty") || localStorage.setItem("difficulty", "hard");
 
 if (isNaN(maxImages) || maxImages < 3 || maxImages > 15) {
   maxImages = 5;
@@ -53,7 +54,7 @@ window.addEventListener("load", () => {
       const size = getMapSize();
 
       totkMap.style.transition =
-        "width 0.5s ease-in-out, height 0.5s ease-in-out";
+        "width 0.3s ease-in-out, height 0.3s ease-in-out";
       totkMap.style.height = size.hoverHeight;
       totkMap.style.width = size.hoverWidth;
       totkMap.style.marginTop = "50px";
@@ -69,7 +70,7 @@ window.addEventListener("load", () => {
       const size = getMapSize();
 
       totkMap.style.transition =
-        "width 0.5s ease-in-out, height 0.5s ease-in-out";
+        "width 0.3s ease-in-out, height 0.3s ease-in-out";
       totkMap.style.width = size.defaultWidth;
       totkMap.style.height = size.defaultHeight;
     }
@@ -179,7 +180,7 @@ window.addEventListener("load", () => {
   const lineLayer = L.layerGroup();
   const layers = {
     sky: L.imageOverlay("assets/images/maps/sky.jpg", bounds),
-    surface: L.imageOverlay("assets/images/maps/surface.jpg", bounds),
+    surface: L.imageOverlay("assets/images/maps/surface/surface.jpg", bounds),
     depths: L.imageOverlay("assets/images/maps/depths.jpg", bounds),
   };
 
@@ -253,7 +254,6 @@ window.addEventListener("load", () => {
 
   async function loadLocationData() {
     try {
-        let difficulty = localStorage.getItem("difficulty") || "hard";
         const validDifficulties = ["easy", "medium", "hard"];
         if (!validDifficulties.includes(difficulty)) {
             difficulty = "hard";
@@ -515,11 +515,11 @@ function endGame() {
   
     let scoreColor;
     function getScoreColor() {
-      if (localStorage.getItem("difficulty") == "easy") {
+      if (difficulty == "easy") {
         scoreColor = "#11a832";
-      } else if (localStorage.getItem("difficulty") == "medium") {
+      } else if (difficulty == "medium") {
         scoreColor = "yellow";
-      } else if (localStorage.getItem("difficulty") == "hard") {
+      } else if (difficulty == "hard") {
         scoreColor = "red";
       }
     }
