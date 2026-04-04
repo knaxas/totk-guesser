@@ -2,6 +2,7 @@ let x, y, xImage, yImage, layerImage, currentLayer;
 let score = 0,
   distance = 0,
   imageRound = 1,
+  seedForPlayingAgain,
   seedQueue;
 let maxImages =
   parseInt(localStorage.getItem("maxRounds"), 10) ||
@@ -329,6 +330,8 @@ window.addEventListener("load", () => {
   function calculateSeed(imageNumber) {
     let seed = imageNumber * 137;
     seed = (seed * 19 + 123456) % 1000000;
+    seedForPlayingAgain = seed
+
     return seed;
   }
 
@@ -352,7 +355,6 @@ async function getImageKeyFromSeed() {
       isMultiplayer = true;
       let seedSequence = window.location.search.split("&")
       maxImages = seedSequence.length
-      localStorage.setItem("difficulty", "hard")
 
       if(imageRound == 1) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -428,7 +430,7 @@ async function getImageKeyFromSeed() {
     const scoreDeduction = Math.floor((distance - 50) / 0.25);
     const points = Math.max(maxScore - scoreDeduction, 0);
     return { points, distance };
-  } // falls das jemand liest, diese funktion hat mich gefickt
+  } // falls das jemand liest, diese funktion hat mich auseinander genommen
 
   function drawLine() {
     lineLayer.clearLayers();
@@ -446,7 +448,7 @@ async function getImageKeyFromSeed() {
     if (currentLayer !== layerImage) {
       updateInnerHTMLWithAnimation(
         "customMessage",
-        "Digga nicht mal die Ebene ist korrekt, wtf"
+        "Falsche Ebene :D"
       );
       return;
     }
@@ -481,13 +483,13 @@ async function getImageKeyFromSeed() {
       getResult();
 
       const urlParams = new URLSearchParams(window.location.search);
-      const seed = urlParams.get("seed");
+      let seed = urlParams.get("seed");
       if (imageRound == 1) {
-        localStorage.setItem("seedQueue", seed);
+        localStorage.setItem("seedQueue", seedForPlayingAgain);
       } else {
         localStorage.setItem(
           "seedQueue",
-          localStorage.getItem("seedQueue") + "&" + seed
+          localStorage.getItem("seedQueue") + "&" + seedForPlayingAgain
         );
       }
 
@@ -628,7 +630,7 @@ function endGame() {
     buttonDiv.classList.add("button-div");
 
     const button = document.createElement("button");
-    button.textContent = "Play Again";
+    button.textContent = "Play new Game";
     button.classList.add("button");
     button.addEventListener("click", () => {
       window.location = window.location.href.split("?")[0];
@@ -641,7 +643,7 @@ function endGame() {
       navigator.clipboard.writeText(`${baseUrl}?seed=${localStorage.getItem("seedQueue")}`);
     });
 
-    buttonDiv.appendChild(button);
+    buttonDiv.appendChild(button);  
     buttonDiv.appendChild(copySeed)
     overlay.appendChild(buttonDiv);
 
