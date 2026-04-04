@@ -94,7 +94,6 @@ body {
 }
 
 .left-content input[disabled] {
-  cursor: not-allowed;
   opacity: 0.6;
 }
 
@@ -228,14 +227,16 @@ body {
         <h1>Welcome to the TotK-Guesser!</h1>
         <div class="inputs">
           <div class="input-wrapper">
+            <p style="margin: 0; color: #fff; font-family: 'ZeldaFont', sans-serif; font-size: xx-large;">Your Seed:</p>
             <img src="assets/images/icons/Obj_KorokNuts.png" alt="Seed Icon" class="input-icon-inside" />
             <input
-              style="cursor: not-allowed;"
+              id="seed"
               title="Not available yet"
-              disabled
               type="text"
               placeholder="Seed"
             />
+            <p id="seed-feedback" style="color: red; font-family: Arial, sans-serif; font-size: medium;"></p>
+            <button style="margin-top: 12px;" onclick="generateRandomSeed()">Generate random Seed</button>
           </div>
           <p style="margin: 0; color: #fff; font-family: 'ZeldaFont', sans-serif; font-size: xx-large;">Rounds:</p>
           <div class="input-wrapper">
@@ -247,40 +248,188 @@ body {
       </div>
       <div id="difficulty-selecter" class="right-content">
         <p>Difficulty</p>
-        <img title="hard" src="assets/images/icons/PutRupee_Red.png" alt="Bild"/>
-        <img title="medium" src="assets/images/icons/PutRupee_Gold.png" alt="Bild"/>
-        <img title="easy" src="assets/images/icons/PutRupee.png" alt="Bild"/>
+        <img title="hard" src="assets/images/icons/PutRupee_Red.png" alt="Bild" />
+        <img title="medium" src="assets/images/icons/PutRupee_Gold.png" alt="Bild" />
+        <img title="easy" src="assets/images/icons/PutRupee.png" alt="Bild" />
       </div>
     </div>
-
+  
     <script>
-      function applyGlowEffect() {
-          const difficulty = localStorage.getItem("difficulty") || "hard";
-  
-          const images = document.querySelectorAll("#difficulty-selecter img");
-          images.forEach(img => img.style.filter = "");
-  
-          const selectedImage = Array.from(images).find(img => img.title === difficulty);
-          if (selectedImage) {
-              selectedImage.style.filter = "drop-shadow(0 0 0.75rem rgb(255, 217, 0))";
-          }
+      function calculateSeed(imageNumber) {
+        let seed = imageNumber * 137;
+        seed = (seed * 19 + 123456) % 1000000;
+        return seed;
       }
   
-      document.addEventListener("DOMContentLoaded", applyGlowEffect);
-      document.getElementById("difficulty-selecter").addEventListener("click", (event) => {
-          if (event.target.tagName === "IMG") {
-              const images = document.querySelectorAll("#difficulty-selecter img");
-              images.forEach(img => img.style.filter = "");
-              event.target.style.filter = "drop-shadow(0 0 0.75rem rgb(255, 217, 0))";
-              localStorage.setItem("difficulty", event.target.title);
-          }
-      });
-
-    function startGame() {
-      localStorage.setItem("maxRounds", document.getElementById("playableRounds").value);
-      window.location = "guess";
-    }
-  </script>
+      async function fetchLocations() {
+        const response = await fetch("assets/images/locations/locations.json");
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        return response.json();
+      }
   
-</body>
+      async function generateRandomSeed() {
+        const maxRounds = parseInt(localStorage.getItem("maxRounds") || 5, 10);
+        const difficulty = localStorage.getItem("difficulty") || "hard";
+        const locations = await fetchLocations();
+  
+        const filteredImages = Object.keys(locations).filter(key => {
+          const [layer] = locations[key].split("_");
+          if (difficulty === "easy") return layer === "surface";
+          if (difficulty === "medium") return layer === "surface" || layer === "sky";
+          return true; // "hard"
+        });
+  
+        const seeds = [];
+        for (let i = 0; i < maxRounds; i++) {
+          const randomIndex = Math.floor(Math.random() * filteredImages.length);
+          const imageKey = filteredImages[randomIndex];
+          const imageNumber = parseInt(imageKey.replace("img", ""), 10);
+          seeds.push(calculateSeed(imageNumber));
+        }
+  
+        const seedString = seeds.join("&");
+        document.getElementById("seed").value = seedString;
+        localStorage.setItem("currentSeed", seedString);
+      }
+  
+      async function validateSeed(seed) {
+  const locations = await fetchLocations();
+  const feedbackElement = document.getElementById("seed-feedback");
+
+  if (!seed.match(/^(\d{1,6}&)*\d{1,6}$/)) {
+    feedbackElement.textContent = "Invalid format. Seed should be numbers separated by '&'.";
+    return false;
+  }
+
+  const parts = seed.split("&");
+  if (parts.length < 3) {
+    feedbackElement.textContent = "Seed must have at least 3 rounds.";
+    return false;
+  }
+  if (parts.length > 15) {
+    feedbackElement.textContent = "Seed cannot have more than 15 rounds.";
+    return false;
+  }
+
+  const difficulty = localStorage.getItem("difficulty") || "hard";
+  let detectedDifficulty = "easy";
+  const filteredImages = Object.keys(locations).filter(key => {
+    const [layer] = locations[key].split("_");
+    if (difficulty === "easy") return layer === "surface";
+    if (difficulty === "medium") return layer === "surface" || layer === "sky";
+    return true;
+  });
+
+  for (const part of parts) {
+    const seedNumber = parseInt(part, 10);
+    const matchingImage = Object.keys(locations).find(key => {
+      const imageNumber = parseInt(key.replace("img", ""), 10);
+      return calculateSeed(imageNumber) === seedNumber;
+    });
+
+    if (!matchingImage) {
+      feedbackElement.textContent = "Seed numbers do not match available images.";
+      return false;
+    }
+
+    const [layer] = locations[matchingImage].split("_");
+    if (layer === "surface") detectedDifficulty = "easy";
+    else if (layer === "sky" && detectedDifficulty !== "hard") detectedDifficulty = "medium";
+    else if (layer === "depths") detectedDifficulty = "hard";
+  }
+
+  const roundsInput = document.getElementById("playableRounds");
+  const difficultySelector = document.getElementById("difficulty-selecter");
+
+  if (detectedDifficulty !== difficulty) {
+    localStorage.setItem("difficulty", detectedDifficulty);
+
+    const images = difficultySelector.querySelectorAll("img");
+    images.forEach(img => img.style.filter = "");
+    const selectedImage = Array.from(images).find(img => img.title === detectedDifficulty);
+    if (selectedImage) {
+      selectedImage.style.filter = "drop-shadow(0 0 0.75rem rgb(255, 217, 0))";
+    }
+
+    feedbackElement.textContent = `Difficulty automatically adjusted to "${detectedDifficulty}".`;
+  }
+
+  if (parts.length !== parseInt(localStorage.getItem("maxRounds"), 10)) {
+    localStorage.setItem("maxRounds", parts.length);
+    roundsInput.value = parts.length;
+
+    feedbackElement.textContent += ` Rounds automatically adjusted to ${parts.length}.`;
+  }
+
+  feedbackElement.textContent += " Seed is valid.";
+  return true;
+}
+
+  
+      document.addEventListener("DOMContentLoaded", async () => {
+        const savedSeed = localStorage.getItem("currentSeed");
+        if (savedSeed) {
+          document.getElementById("seed").value = savedSeed;
+        } else {
+          await generateRandomSeed();
+        }
+  
+        applyGlowEffect();
+        setupEventListeners();
+      });
+  
+      function setupEventListeners() {
+        const seedInput = document.getElementById("seed");
+        seedInput.addEventListener("input", async () => {
+          const seed = seedInput.value;
+          const isValid = await validateSeed(seed);
+          if (isValid) {
+            localStorage.setItem("currentSeed", seed);
+          }
+        });
+  
+        const roundsInput = document.getElementById("playableRounds");
+        roundsInput.addEventListener("change", async () => {
+          localStorage.setItem("maxRounds", roundsInput.value);
+          await generateRandomSeed();
+        });
+  
+        const difficultySelector = document.getElementById("difficulty-selecter");
+        difficultySelector.addEventListener("click", async (event) => {
+          if (event.target.tagName === "IMG") {
+            const images = document.querySelectorAll("#difficulty-selecter img");
+            images.forEach(img => img.style.filter = "");
+            event.target.style.filter = "drop-shadow(0 0 0.75rem rgb(255, 217, 0))";
+            localStorage.setItem("difficulty", event.target.title);
+            await generateRandomSeed();
+          }
+        });
+      }
+  
+      function applyGlowEffect() {
+        const difficulty = localStorage.getItem("difficulty") || "hard";
+  
+        const images = document.querySelectorAll("#difficulty-selecter img");
+        images.forEach(img => img.style.filter = "");
+  
+        const selectedImage = Array.from(images).find(img => img.title === difficulty);
+        if (selectedImage) {
+          selectedImage.style.filter = "drop-shadow(0 0 0.75rem rgb(255, 217, 0))";
+        }
+  
+        document.getElementById("playableRounds").value = localStorage.getItem("maxRounds") || 5;
+      }
+  
+      function startGame() {
+        const seed = document.getElementById("seed").value;
+        if (seed) {
+          window.location.href = `guess?seed=${seed}`;
+        } else {
+          alert("Please generate a seed first.");
+        }
+      }
+    </script>
+  </body>
+  
+  
 </html>
