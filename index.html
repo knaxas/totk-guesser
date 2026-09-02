@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -433,3 +434,600 @@ body {
   
   
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TotK Guesser Home</title>
+    <link rel="shortcut icon" type="x-icon" href="assets/images/icons/korokmask.png">
+    <meta property="og:image" content="https://github.com/knaxas/totk-guesser/blob/master/assets/images/icons/korokmask.png?raw=true" />
+    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="author" content="Maxas">
+    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="zonai-particles" id="particles"></div>
+
+    <style>
+        @font-face {
+            font-family: 'ZeldaFont';
+            src: url('assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
+        }
+
+        :root {
+            --zonai-teal: #00ffc3;
+            --zonai-glow: rgba(0, 255, 195, 0.6);
+            --gold-accent: #f3d068;
+            --gold-glow: rgba(243, 208, 104, 0.5);
+            --dark-bg: rgba(8, 14, 20, 0.85);
+            --panel-bg: rgba(14, 22, 32, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-image: radial-gradient(circle at center, rgba(5, 15, 20, 0.4) 0%, rgba(2, 5, 8, 0.95) 100%), url("assets/images/totkBackground.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: "Poppins", sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .zonai-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--zonai-teal);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--zonai-teal), 0 0 20px var(--zonai-teal);
+            opacity: 0;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        .image-container {
+            position: relative;
+            z-index: 2;
+            width: clamp(320px, 85vw, 1200px);
+            min-height: clamp(520px, 65vh, 750px);
+            background: var(--dark-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 195, 0.4);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9),
+                        0 0 40px rgba(0, 255, 195, 0.25),
+                        inset 0 0 20px rgba(0, 255, 195, 0.15);
+            animation: containerEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .image-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 195, 0.08), transparent);
+            transform: skewX(-25deg);
+            animation: shinePass 6s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes shinePass {
+            0% { left: -150%; }
+            20% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        @keyframes containerEntrance {
+            0% { opacity: 0; transform: translateY(40px) scale(0.92); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .left-content {
+            flex: 3.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            padding: clamp(2rem, 3.5vw, 4.5rem);
+            background: linear-gradient(135deg, rgba(16, 28, 38, 0.85), rgba(6, 12, 18, 0.95));
+            text-align: center;
+            position: relative;
+        }
+
+        .left-content h1 {
+            font-family: 'ZeldaFont', 'Cinzel', serif;
+            font-size: clamp(2.2rem, 3.8vw, 4.5rem);
+            font-weight: 900;
+            margin: 0 0 1.5rem 0;
+            color: #ffffff;
+            letter-spacing: 3px;
+            text-shadow: 0 0 12px var(--zonai-glow), 0 0 30px var(--zonai-teal), 0 4px 8px rgba(0,0,0,0.8);
+            animation: pulseTitle 3s infinite alternate;
+        }
+
+        @keyframes pulseTitle {
+            0% { text-shadow: 0 0 10px var(--zonai-glow), 0 0 20px rgba(0, 255, 195, 0.3); }
+            100% { text-shadow: 0 0 20px var(--zonai-glow), 0 0 40px rgba(0, 255, 195, 0.8), 0 0 60px rgba(0, 255, 195, 0.4); }
+        }
+
+        .left-content .inputs {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(1.2rem, 1.8vw, 2.2rem);
+            width: 100%;
+        }
+
+        p.input-label {
+            margin: 0 0 8px 0;
+            color: var(--gold-accent);
+            font-family: 'ZeldaFont', 'Cinzel', serif;
+            font-size: clamp(1.3rem, 1.8vw, 2.2rem);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--gold-glow), 0 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: clamp(350px, 45vw, 650px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-field-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .left-content input {
+            width: 100%;
+            padding: clamp(0.8rem, 1.1vw, 1.3rem) clamp(1rem, 1.5vw, 2rem) clamp(0.8rem, 1.1vw, 1.3rem) clamp(3rem, 4vw, 5rem);
+            border: 1px solid rgba(0, 255, 195, 0.3);
+            border-radius: 12px;
+            background: rgba(4, 10, 15, 0.75);
+            color: #fff;
+            text-align: center;
+            font-size: clamp(1rem, 1.3vw, 1.6rem);
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .left-content input:focus {
+            outline: none;
+            border-color: var(--zonai-teal);
+            box-shadow: 0 0 25px var(--zonai-glow), inset 0 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(2, 6, 10, 0.9);
+            transform: scale(1.02);
+        }
+
+        .input-icon-inside {
+            position: absolute;
+            width: clamp(26px, 2.2vw, 42px);
+            height: clamp(26px, 2.2vw, 42px);
+            left: clamp(12px, 1.2vw, 20px);
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            filter: drop-shadow(0 0 6px var(--zonai-teal));
+            transition: transform 0.3s ease;
+        }
+
+        .input-field-container:focus-within .input-icon-inside {
+            transform: translateY(-50%) scale(1.25) rotate(-5deg);
+        }
+
+        #seed-feedback {
+            min-height: 22px;
+            margin-top: 8px;
+            font-size: clamp(0.85rem, 1vw, 1.1rem) !important;
+            color: var(--zonai-teal);
+            text-shadow: 0 0 8px var(--zonai-glow);
+            transition: all 0.3s ease;
+        }
+
+        .left-content button {
+            width: 100%;
+            max-width: clamp(350px, 45vw, 650px);
+            padding: clamp(0.8rem, 1.1vw, 1.3rem);
+            border: 1px solid var(--zonai-teal);
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.1vw, 1.3rem);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, rgba(0, 255, 195, 0.12), rgba(0, 255, 195, 0.02));
+            color: var(--zonai-teal);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .left-content button:hover {
+            background: var(--zonai-teal);
+            color: #02070a;
+            box-shadow: 0 0 35px var(--zonai-glow), 0 8px 25px rgba(0, 0, 0, 0.6);
+            transform: translateY(-3px) scale(1.01);
+        }
+
+        .left-content button:active {
+            transform: translateY(1px) scale(0.99);
+        }
+
+        #applyChanges {
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, rgba(243, 208, 104, 0.25), rgba(243, 208, 104, 0.05));
+            border: 2px solid var(--gold-accent);
+            color: var(--gold-accent);
+            font-size: clamp(1.3rem, 1.6vw, 2rem);
+            font-weight: 800;
+            padding: clamp(1rem, 1.3vw, 1.6rem);
+            box-shadow: 0 0 20px rgba(243, 208, 104, 0.2), 0 8px 25px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #applyChanges:hover {
+            background: linear-gradient(135deg, #f3d068, #e5b332);
+            color: #000;
+            box-shadow: 0 0 45px rgba(243, 208, 104, 0.8), 0 10px 30px rgba(0, 0, 0, 0.8);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .right-content {
+            flex: 1.2;
+            background: rgba(6, 10, 14, 0.9);
+            padding: clamp(1.5rem, 2.5vw, 3rem) clamp(1rem, 1.5vw, 2rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 2px solid rgba(0, 255, 195, 0.15);
+            gap: clamp(1.5rem, 2.5vw, 3rem);
+            position: relative;
+        }
+
+        .right-content p {
+            letter-spacing: 3px;
+            font-family: 'ZeldaFont', 'Cinzel', serif;
+            font-size: clamp(1.5rem, 2.2vw, 2.6rem);
+            font-weight: 900;
+            margin: 0;
+            color: var(--gold-accent);
+            text-shadow: 0 0 12px var(--gold-glow);
+        }
+
+        .right-content img {
+            width: clamp(65px, 6.5vw, 120px);
+            height: clamp(65px, 6.5vw, 120px);
+            object-fit: contain;
+            border-radius: 16px;
+            padding: clamp(8px, 1vw, 14px);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: rupeeFloat 4s infinite ease-in-out alternate;
+        }
+
+        .right-content img:nth-child(2) { animation-delay: 0s; }
+        .right-content img:nth-child(3) { animation-delay: 1.3s; }
+        .right-content img:nth-child(4) { animation-delay: 2.6s; }
+
+        @keyframes rupeeFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        .right-content img:hover {
+            transform: scale(1.25) rotate(5deg) !important;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--gold-accent);
+            box-shadow: 0 0 25px rgba(243, 208, 104, 0.4);
+        }
+
+        .right-content img[style*="drop-shadow"] {
+            transform: scale(1.18) !important;
+            border-color: var(--gold-accent);
+            background: rgba(243, 208, 104, 0.15);
+            box-shadow: 0 0 30px rgba(243, 208, 104, 0.5), inset 0 0 15px rgba(243, 208, 104, 0.3);
+        }
+
+        @media screen and (max-width: 850px) {
+            body {
+                overflow-y: auto;
+                align-items: flex-start;
+            }
+
+            .image-container {
+                flex-direction: column;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .right-content {
+                flex-direction: row;
+                flex-wrap: wrap;
+                border-left: none;
+                border-top: 2px solid rgba(0, 255, 195, 0.15);
+            }
+
+            .right-content p {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+
+    <div class="image-container">
+      <div class="left-content">
+        <h1>Welcome to the TotK-Guesser!</h1>
+        <div class="inputs">
+          <div class="input-wrapper">
+            <p class="input-label">Your Seed:</p>
+            <div class="input-field-container">
+                <img src="assets/images/icons/Obj_KorokNuts.png" alt="Seed Icon" class="input-icon-inside" />
+                <input
+                  id="seed"
+                  title="Not available yet"
+                  type="text"
+                  placeholder="Seed"
+                />
+            </div>
+            <p id="seed-feedback"></p>
+            <button style="margin-top: 6px;" onclick="generateRandomSeed()">Generate random Seed</button>
+          </div>
+          
+          <div class="input-wrapper">
+            <p class="input-label">Rounds:</p>
+            <div class="input-field-container">
+                <img src="assets/images/icons/Obj_TreasureMap_00.png" alt="Rounds Icon" class="input-icon-inside" />
+                <input id="playableRounds" type="number" value="5" max="15" min="3" placeholder="Rounds" />
+            </div>
+          </div>
+        </div>
+        <button onclick="startGame()" id="applyChanges">Start Game</button>
+      </div>
+
+      <div id="difficulty-selecter" class="right-content">
+        <p>Difficulty</p>
+        <img title="hard" src="assets/images/icons/PutRupee_Red.png" alt="Hard" />
+        <img title="medium" src="assets/images/icons/PutRupee_Gold.png" alt="Medium" />
+        <img title="easy" src="assets/images/icons/PutRupee.png" alt="Easy" />
+      </div>
+    </div>
+  
+    <script>
+      function createParticles() {
+        const container = document.getElementById('particles');
+        const particleCount = 25;
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('particle');
+          const size = Math.random() * 4 + 2;
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+          particle.style.left = `${Math.random() * 100}%`;
+          particle.style.animationDuration = `${Math.random() * 6 + 4}s`;
+          particle.style.animationDelay = `${Math.random() * 5}s`;
+          container.appendChild(particle);
+        }
+      }
+
+      function calculateSeed(imageNumber) {
+        let seed = imageNumber * 137;
+        seed = (seed * 19 + 123456) % 1000000;
+        return seed;
+      }
+  
+      async function fetchLocations() {
+        const response = await fetch("assets/images/locations/locations.json");
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        return response.json();
+      }
+  
+      async function generateRandomSeed() {
+        const maxRounds = parseInt(localStorage.getItem("maxRounds") || 5, 10);
+        const difficulty = localStorage.getItem("difficulty") || "hard";
+        const locations = await fetchLocations();
+  
+        const filteredImages = Object.keys(locations).filter(key => {
+          const [layer] = locations[key].split("_");
+          if (difficulty === "easy") return layer === "surface";
+          if (difficulty === "medium") return layer === "surface" || layer === "sky";
+          return true;
+        });
+  
+        const seeds = [];
+        for (let i = 0; i < maxRounds; i++) {
+          const randomIndex = Math.floor(Math.random() * filteredImages.length);
+          const imageKey = filteredImages[randomIndex];
+          const imageNumber = parseInt(imageKey.replace("img", ""), 10);
+          seeds.push(calculateSeed(imageNumber));
+        }
+  
+        const seedString = seeds.join("&");
+        document.getElementById("seed").value = seedString;
+        localStorage.setItem("currentSeed", seedString);
+      }
+  
+      async function validateSeed(seed) {
+        const locations = await fetchLocations();
+        const feedbackElement = document.getElementById("seed-feedback");
+
+        if (!seed.match(/^(\d{1,6}&)*\d{1,6}$/)) {
+          feedbackElement.textContent = "Invalid format. Seed should be numbers separated by '&'.";
+          return false;
+        }
+
+        const parts = seed.split("&");
+        if (parts.length < 3) {
+          feedbackElement.textContent = "Seed must have at least 3 rounds.";
+          return false;
+        }
+        if (parts.length > 15) {
+          feedbackElement.textContent = "Seed cannot have more than 15 rounds.";
+          return false;
+        }
+
+        const difficulty = localStorage.getItem("difficulty") || "hard";
+        let detectedDifficulty = "easy";
+        const filteredImages = Object.keys(locations).filter(key => {
+          const [layer] = locations[key].split("_");
+          if (difficulty === "easy") return layer === "surface";
+          if (difficulty === "medium") return layer === "surface" || layer === "sky";
+          return true;
+        });
+
+        for (const part of parts) {
+          const seedNumber = parseInt(part, 10);
+          const matchingImage = Object.keys(locations).find(key => {
+            const imageNumber = parseInt(key.replace("img", ""), 10);
+            return calculateSeed(imageNumber) === seedNumber;
+          });
+
+          if (!matchingImage) {
+            feedbackElement.textContent = "Seed numbers do not match available images.";
+            return false;
+          }
+
+          const [layer] = locations[matchingImage].split("_");
+          if (layer === "surface") detectedDifficulty = "easy";
+          else if (layer === "sky" && detectedDifficulty !== "hard") detectedDifficulty = "medium";
+          else if (layer === "depths") detectedDifficulty = "hard";
+        }
+
+        const roundsInput = document.getElementById("playableRounds");
+        const difficultySelector = document.getElementById("difficulty-selecter");
+
+        if (detectedDifficulty !== difficulty) {
+          localStorage.setItem("difficulty", detectedDifficulty);
+
+          const images = difficultySelector.querySelectorAll("img");
+          images.forEach(img => img.style.filter = "");
+          const selectedImage = Array.from(images).find(img => img.title === detectedDifficulty);
+          if (selectedImage) {
+            selectedImage.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
+          }
+
+          feedbackElement.textContent = `Difficulty automatically adjusted to "${detectedDifficulty}".`;
+        }
+
+        if (parts.length !== parseInt(localStorage.getItem("maxRounds"), 10)) {
+          localStorage.setItem("maxRounds", parts.length);
+          roundsInput.value = parts.length;
+
+          feedbackElement.textContent += ` Rounds automatically adjusted to ${parts.length}.`;
+        }
+
+        feedbackElement.textContent += " Seed is valid.";
+        return true;
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        createParticles();
+        const savedSeed = localStorage.getItem("currentSeed");
+        if (savedSeed) {
+          document.getElementById("seed").value = savedSeed;
+        } else {
+          await generateRandomSeed();
+        }
+  
+        applyGlowEffect();
+        setupEventListeners();
+      });
+  
+      function setupEventListeners() {
+        const seedInput = document.getElementById("seed");
+        seedInput.addEventListener("input", async () => {
+          const seed = seedInput.value;
+          const isValid = await validateSeed(seed);
+          if (isValid) {
+            localStorage.setItem("currentSeed", seed);
+          }
+        });
+  
+        const roundsInput = document.getElementById("playableRounds");
+        roundsInput.addEventListener("change", async () => {
+          localStorage.setItem("maxRounds", roundsInput.value);
+          await generateRandomSeed();
+        });
+  
+        const difficultySelector = document.getElementById("difficulty-selecter");
+        difficultySelector.addEventListener("click", async (event) => {
+          if (event.target.tagName === "IMG") {
+            const images = document.querySelectorAll("#difficulty-selecter img");
+            images.forEach(img => img.style.filter = "");
+            event.target.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
+            localStorage.setItem("difficulty", event.target.title);
+            await generateRandomSeed();
+          }
+        });
+      }
+  
+      function applyGlowEffect() {
+        const difficulty = localStorage.getItem("difficulty") || "hard";
+  
+        const images = document.querySelectorAll("#difficulty-selecter img");
+        images.forEach(img => img.style.filter = "");
+  
+        const selectedImage = Array.from(images).find(img => img.title === difficulty);
+        if (selectedImage) {
+          selectedImage.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
+        }
+  
+        document.getElementById("playableRounds").value = localStorage.getItem("maxRounds") || 5;
+      }
+  
+      function startGame() {
+        const seed = document.getElementById("seed").value;
+        if (seed) {
+          window.location.href = `guess?seed=${seed}`;
+        } else {
+          alert("Please generate a seed first.");
+        }
+      }
+    </script>
+</body>
+</html>
+>>>>>>> 6e250e5 (Update calculateScore logic and locations pool parsing)

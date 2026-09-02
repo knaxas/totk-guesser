@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 :root {
     --bg-colour: #2e2e2e;
     --map-bg-colour: #000000;
@@ -302,3 +303,355 @@ body {
     background-color: #004085;
     transform: translateY(2px);
   }
+=======
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+    --zonai-teal: #00ffc3;
+    --zonai-glow: rgba(0, 255, 195, 0.45);
+    --gold-accent: #f3d068;
+    --gold-glow: rgba(243, 208, 104, 0.45);
+    --glass-bg: rgba(10, 18, 26, 0.85);
+    --border-color: rgba(0, 255, 195, 0.35);
+
+    --sky-color: #50e6ff;
+    --sky-glow: rgba(80, 230, 255, 0.4);
+    --surface-color: #00ffc3;
+    --surface-glow: rgba(0, 255, 195, 0.4);
+    --depths-color: #c850ff;
+    --depths-glow: rgba(200, 80, 255, 0.4);
+}
+
+@font-face {
+    font-family: 'ZeldaFont';
+    src: url('assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #03070b;
+    background-image: radial-gradient(circle at center, rgba(8, 20, 28, 0.5) 0%, rgba(2, 5, 8, 0.95) 100%), url("assets/images/totkBackground.png");
+    background-size: cover;
+    background-position: center;
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+}
+
+.fw-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+}
+
+#sidebar {
+    width: 360px;
+    min-width: 320px;
+    height: auto;
+    max-height: calc(100vh - 48px);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid var(--border-color);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: flex-start;
+    z-index: 10;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 255, 195, 0.15);
+}
+
+#data-display {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#imageTurn, #score, #customMessage, #restart {
+    background: rgba(4, 10, 16, 0.65);
+    border: 1px solid rgba(0, 255, 195, 0.25);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'ZeldaFont', 'Cinzel', serif;
+    font-size: 1.15rem;
+    letter-spacing: 1.5px;
+    text-align: center;
+}
+
+#imageTurn x {
+    color: var(--zonai-teal) !important;
+    text-shadow: 0 0 10px var(--zonai-glow);
+}
+
+#score {
+    color: var(--gold-accent);
+    border-color: rgba(243, 208, 104, 0.35);
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+#customMessage {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    color: #b0c4de;
+}
+
+#restart {
+    cursor: pointer;
+    border-color: var(--gold-accent);
+    color: var(--gold-accent);
+    transition: all 0.25s ease;
+}
+
+#restart:hover {
+    background: var(--gold-accent);
+    color: #000;
+    box-shadow: 0 0 20px var(--gold-glow);
+    transform: translateY(-2px);
+}
+
+.zonai-divider {
+    position: relative;
+    width: 100%;
+    height: 1.5px;
+    margin: 12px 0;
+    background: linear-gradient(90deg, transparent, var(--zonai-teal), transparent);
+    box-shadow: 0 0 10px var(--zonai-glow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.zonai-divider::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--zonai-teal);
+    transform: rotate(45deg);
+    box-shadow: 0 0 8px var(--zonai-teal);
+}
+
+.map-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.map-switcher button {
+    padding: 12px;
+    font-family: 'ZeldaFont', 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-switcher button:nth-child(1) {
+    color: var(--sky-color);
+    background: linear-gradient(135deg, rgba(80, 230, 255, 0.12), rgba(80, 230, 255, 0.02));
+    border: 1px solid rgba(80, 230, 255, 0.4);
+    text-shadow: 0 0 6px var(--sky-glow);
+}
+
+.map-switcher button:nth-child(1):hover {
+    background: var(--sky-color);
+    color: #000;
+    box-shadow: 0 0 20px var(--sky-glow);
+    transform: translateY(-2px);
+}
+
+.map-switcher button:nth-child(2) {
+    color: var(--surface-color);
+    background: linear-gradient(135deg, rgba(0, 255, 195, 0.12), rgba(0, 255, 195, 0.02));
+    border: 1px solid rgba(0, 255, 195, 0.4);
+    text-shadow: 0 0 6px var(--surface-glow);
+}
+
+.map-switcher button:nth-child(2):hover {
+    background: var(--surface-color);
+    color: #000;
+    box-shadow: 0 0 20px var(--surface-glow);
+    transform: translateY(-2px);
+}
+
+.map-switcher button:nth-child(3) {
+    color: var(--depths-color);
+    background: linear-gradient(135deg, rgba(200, 80, 255, 0.12), rgba(200, 80, 255, 0.02));
+    border: 1px solid rgba(200, 80, 255, 0.4);
+    text-shadow: 0 0 6px var(--depths-glow);
+}
+
+.map-switcher button:nth-child(3):hover {
+    background: var(--depths-color);
+    color: #000;
+    box-shadow: 0 0 20px var(--depths-glow);
+    transform: translateY(-2px);
+}
+
+#submit-marker {
+    margin-top: 8px;
+    padding: 14px !important;
+    background: linear-gradient(135deg, rgba(243, 208, 104, 0.3), rgba(243, 208, 104, 0.08)) !important;
+    border: 1.5px solid var(--gold-accent) !important;
+    color: var(--gold-accent) !important;
+    font-size: 1.15rem !important;
+    text-shadow: 0 0 8px var(--gold-glow) !important;
+}
+
+#submit-marker:hover {
+    background: var(--gold-accent) !important;
+    color: #000 !important;
+    box-shadow: 0 0 25px var(--gold-glow) !important;
+    transform: translateY(-2px);
+}
+
+.credit-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
+}
+
+.credit-container img {
+    height: 20px;
+}
+
+.image-container {
+    flex: 1;
+    height: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid var(--border-color);
+    border-radius: 24px;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85);
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    user-select: none;
+}
+
+#totk-map {
+    position: absolute;
+    bottom: 28px;
+    right: 28px;
+    width: 360px;
+    height: 270px;
+    z-index: 20;
+    border-radius: 16px;
+    border: 2px solid var(--border-color);
+    background: #000 !important;
+    overflow: hidden;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85), 0 0 20px rgba(0, 255, 195, 0.2);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#totk-map:hover {
+    width: 640px;
+    height: 480px;
+    border-color: var(--gold-accent);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 30px var(--gold-glow);
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(2, 5, 8, 0.92);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.overlay-text {
+    font-family: 'ZeldaFont', 'Cinzel', serif;
+    font-size: 3rem;
+    color: #fff;
+    margin-bottom: 24px;
+    text-shadow: 0 0 20px var(--zonai-glow);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.button-div {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.button {
+    padding: 14px 32px;
+    font-family: 'ZeldaFont', 'Cinzel', serif;
+    font-size: 1.15rem;
+    cursor: pointer;
+    border: 1px solid var(--gold-accent);
+    background: rgba(243, 208, 104, 0.1);
+    color: var(--gold-accent);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.button:hover {
+    background: var(--gold-accent);
+    color: #000;
+}
+
+@media screen and (max-width: 900px) {
+    .fw-container {
+        flex-direction: column;
+        padding: 12px;
+    }
+
+    #sidebar {
+        width: 100%;
+        height: auto;
+        min-width: unset;
+    }
+
+    #totk-map {
+        width: 260px;
+        height: 195px;
+    }
+
+    #totk-map:hover {
+        width: 90%;
+        height: 320px;
+    }
+}
+
+.leaflet-control-attribution {
+    display: none !important;
+}
+>>>>>>> 6e250e5 (Update calculateScore logic and locations pool parsing)
