@@ -420,7 +420,6 @@ window.addEventListener("load", () => {
 
     const allKeys = Object.keys(data);
     
-    // KORREKTER POOL-ZUGRIFF ÜBER data[k]
     const pools = {
       surface: allKeys.filter(k => data[k] && data[k].split("_")[0] === "surface"),
       sky: allKeys.filter(k => data[k] && data[k].split("_")[0] === "sky"),
@@ -437,7 +436,6 @@ window.addEventListener("load", () => {
         ...shuffle(pools.sky).slice(0, targetSky)
       ];
     } else {
-      // GARANTIERTE GLEICHMÄSSIGE DRITTEL-AUFTEILUNG BEI HARD
       const baseCount = Math.floor(maxImages / 3);
       const remainder = maxImages % 3;
       
@@ -669,16 +667,15 @@ function calculateScore(x, y, xImage, yImage) {
     distance = Math.sqrt(Math.pow(x - xImage, 2) + Math.pow(y - yImage, 2));
     const maxScore = 5000;
     
-    if (distance <= 100) return { points: maxScore, distance };
+    if (distance <= 90) return { points: maxScore, distance };
 
     const excessDistance = distance - 80;
-    const maxExcess = 1000 - 80;
+    const maxExcess = 1000 - 80; 
 
     if (excessDistance >= maxExcess) {
       const points = Math.max(Math.round(500 * (1 - (excessDistance - maxExcess) / 4000)), 0);
       return { points, distance };
     }
-
     const dropOff = Math.pow(excessDistance / maxExcess, 0.85);
     const points = Math.round(maxScore - (maxScore - 500) * dropOff);
 
