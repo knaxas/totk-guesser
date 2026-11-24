@@ -1,57 +1,102 @@
-<<<<<<< HEAD
 # TotK Guesser
 
-![TotK Guesser](https://img.shields.io/badge/Status-Active-brightgreen)  
-**TotK Guesser** is a game inspired by **GeoGuessr**, but instead of guessing locations on Earth, you guess locations in **Hyrule**! Instead of exploring the Earth, you’ll be placed at random spots in Hyrule, and you need to figure out where you are. The game includes different areas like the **Sky Islands**, the **Surface**, and the hidden **Depths**.
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
-Play the game here: [TotK Guesser](https://knaxas.github.io/totk-guesser/)
+**TotK Guesser** is GeoGuessr for **Hyrule**. You get a screenshot from somewhere in *The Legend of Zelda: Tears of the Kingdom* and have to find the spot on the map: on the **Surface**, up on the **Sky Islands** or down in the **Depths**. The closer your pin, the more points you get.
+
+▶ **Play it here: [knaxas.github.io/totk-guesser](https://knaxas.github.io/totk-guesser/)**
 
 ![Showcase](https://github.com/knaxas/totk-guesser/blob/master/assets/images/demo_pic_github.png?raw=true)
 
 ---
 
-## 🌍 How It Works
+## 🎮 How to play
 
-TotK Guesser is inspired by the popular game **GeoGuessr**. In **TotK Guesser**, you are placed at random locations within Hyrule and need to guess your location based on the environment around you. This includes areas from the **Sky Islands**, the **Surface**, and the mysterious **Depths**. Your task is to guess your coordinates, and your answer is compared to the correct location to earn points!
+1. Look closely at the screenshot. Scroll or pinch to zoom in, drag to look around.
+2. Pick the right layer: **Sky**, **Surface** or **Depths**.
+3. Drop your pin on the map and hit **Submit**.
 
-## 🎮 Features
+Each image is worth up to **5,000 points**. Anything within ~90 m counts as a perfect guess. A pin on the wrong layer scores **0**.
 
-- **Multiple Map Layers:** Play on the **Surface**, explore the **Sky Islands**, or venture into the **Depths** of Hyrule!
-- **Interactive Map:** Zoom in and move around the map to explore different areas.
-- **Difficulty Levels:** Choose between **Easy**, **Medium**, and **Hard** to match your skill level.
-- **Highscore System:** Collect points and compare your results with other players.
+### Difficulty
 
-## ✨ Inspiration
+| Difficulty | Layers in the game |
+|---|---|
+| 🟢 Easy | Surface only |
+| 🟡 Medium | Surface and Sky Islands |
+| 🔴 Hard | Surface, Sky Islands and Depths |
 
-The idea for TotK Guesser came from expanding the project [hyruleguessr](https://hyruleguessr.com). Originally inspired by **GeoGuessr**, I wanted to enhance the game by adding the **Depths** and **Sky Islands** of Hyrule – two intriguing and mysterious parts of the game world that offer a deeper exploration experience. 
+You can play **3 to 15 rounds** per game.
 
-In **TotK Guesser**, you now have the opportunity to explore these areas and prove your knowledge of Hyrule.
-=======
-# TotK Guesser
+### Challenge your friends
 
-![TotK Guesser](https://img.shields.io/badge/Status-Active-brightgreen)  
-**TotK Guesser** is a game inspired by **GeoGuessr**, but instead of guessing locations on Earth, you guess locations in **Hyrule**! Instead of exploring the Earth, you’ll be placed at random spots in Hyrule, and you need to figure out where you are. The game includes different areas like the **Sky Islands**, the **Surface**, and the hidden **Depths**.
+Every game has a **seed**: a short list of numbers that stands for its exact images. Copy the challenge link from the start page or from the results screen and send it to a friend. They get the same images and you can compare scores. You can also paste a seed or a whole link into the seed field on the start page.
 
-Play the game here: [TotK Guesser](https://knaxas.github.io/totk-guesser/)
+### Keyboard shortcuts
 
-![Showcase](https://github.com/knaxas/totk-guesser/blob/master/assets/images/demo_pic_github.png?raw=true)
+| Key | Action |
+|---|---|
+| `Space` / `Enter` | Submit guess / next image |
+| `1` `2` `3` | Switch to Sky / Surface / Depths |
+| `M` | Keep the map open (pin it) |
+| `Esc` | Close the map |
 
----
+## ✨ Features
 
-## 🌍 How It Works
+- **Three map layers**: Surface, Sky Islands and Depths
+- **Zoomable screenshots**: mouse wheel, drag, double-click, pinch and double-tap
+- **Works on phones**: touch-friendly layout with a map you tap to open
+- **Shareable seeds** to challenge friends with the same images
+- **Result screen** with your rank, a round-by-round breakdown and your **personal best** per difficulty and round count
+- **Resume after reload**: if you refresh by accident, your game continues where it was
+- **Fresh images**: random games favour images you haven't seen recently
+- **Installable**: add it to your home screen or install it as an app (web app manifest + icons)
 
-TotK Guesser is inspired by the popular game **GeoGuessr**. In **TotK Guesser**, you are placed at random locations within Hyrule and need to guess your location based on the environment around you. This includes areas from the **Sky Islands**, the **Surface**, and the mysterious **Depths**. Your task is to guess your coordinates, and your answer is compared to the correct location to earn points!
+## 🛠 Running it locally
 
-## 🎮 Features
+It's a plain static website. There is no build step and no dependencies to install. The game loads `locations.json` with `fetch`, so it has to run on a web server. Opening `index.html` straight from disk won't work. For example:
 
-- **Multiple Map Layers:** Play on the **Surface**, explore the **Sky Islands**, or venture into the **Depths** of Hyrule!
-- **Interactive Map:** Zoom in and move around the map to explore different areas.
-- **Difficulty Levels:** Choose between **Easy**, **Medium**, and **Hard** to match your skill level.
-- **Highscore System:** Collect points and compare your results with other players.
+```bash
+# in the project folder
+python -m http.server 8000
+# then open http://localhost:8000
+```
 
-## ✨ Inspiration
+### Project structure
 
-The idea for TotK Guesser came from expanding the project [hyruleguessr](https://hyruleguessr.com). Originally inspired by **GeoGuessr**, I wanted to enhance the game by adding the **Depths** and **Sky Islands** of Hyrule – two intriguing and mysterious parts of the game world that offer a deeper exploration experience. 
+```
+index.html            start page (seed, rounds, difficulty)
+guess.html            the game
+credits.html          credits
+play/shared.js        shared logic: locations, seeds, difficulty, random games
+play/app.js           game logic: map, scoring, image zoom, result screen
+play/app.css          game styles
+assets/images/locations/
+    locations.json    image -> "layer_x_y"
+    imgN.png          original screenshots (fallback)
+    webp/imgN.webp    compressed screenshots (used by the game)
+assets/images/maps/
+    *.jpg             original maps (6000x5000, source for the tiles)
+    tiles/<layer>/    256px WebP map tiles (used by the game)
+    webp/*.webp       compressed full maps (fallback if tiles are missing)
+```
 
-In **TotK Guesser**, you now have the opportunity to explore these areas and prove your knowledge of Hyrule.
->>>>>>> 6e250e5 (Update calculateScore logic and locations pool parsing)
+### Adding a new location
+
+1. Save the screenshot as `assets/images/locations/imgN.png`, using the next free number.
+2. Add a compressed copy as `assets/images/locations/webp/imgN.webp`. For example, with Python and Pillow:
+   ```bash
+   python -c "from PIL import Image; Image.open('assets/images/locations/imgN.png').convert('RGB').save('assets/images/locations/webp/imgN.webp', quality=82)"
+   ```
+   If the WebP file is missing, the game falls back to the PNG.
+3. Add the location to `assets/images/locations/locations.json` as `"imgN": "<layer>_<x>_<y>"`. `<layer>` is `surface`, `sky` or `depths`, and `x`/`y` are the in-game map coordinates.
+
+## 💡 Inspiration
+
+TotK Guesser grew out of [HyruleGuessr](https://hyruleguessr.com), which is itself inspired by **GeoGuessr**. I wanted to add the **Depths** and the **Sky Islands**, the two parts of Tears of the Kingdom's world that make it unique, so you can really prove that you know Hyrule.
+
+## 📜 Credits
+
+Made by Max and Tobias. Maps are rendered with [Leaflet](https://leafletjs.com).
+
+TotK Guesser is a non-commercial fan project. *The Legend of Zelda: Tears of the Kingdom* and all related assets are © Nintendo.

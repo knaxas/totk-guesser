@@ -2,594 +2,776 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TotK Guesser Home</title>
-    <link rel="shortcut icon" type="x-icon" href="assets/images/icons/korokmask.png">
-    <meta property="og:image" content="https://github.com/knaxas/totk-guesser/blob/master/assets/images/icons/korokmask.png?raw=true" />
-    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom</title>
+    <meta name="description" content="Play TotK Guesser for free – the GeoGuessr game for Zelda: Tears of the Kingdom. Find real in-game screenshots on the Surface, Sky Islands and Depths of Hyrule.">
+    <meta name="keywords" content="TotK Guesser, TotK Guessr, Tears of the Kingdom, TotK, Zelda, GeoGuessr, Hyrule, Hyrule Guessr, Zelda map game, Zelda quiz, guess the location, Sky Islands, Depths">
     <meta name="author" content="Maxas">
-    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <link rel="canonical" href="https://knaxas.github.io/totk-guesser/">
+    <link rel="icon" type="image/svg+xml" href="assets/images/icons/logo.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="application-name" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-title" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TotK Guesser">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://knaxas.github.io/totk-guesser/">
+    <meta property="og:title" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <meta property="og:description" content="Look at a screenshot from Tears of the Kingdom and find the spot in Hyrule. Surface, Sky Islands and Depths – free in your browser.">
+    <meta property="og:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <meta name="twitter:description" content="Look at a screenshot from Tears of the Kingdom and find the spot in Hyrule. Surface, Sky Islands and Depths – free in your browser.">
+    <meta name="twitter:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta name="twitter:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://knaxas.github.io/totk-guesser/#website",
+                "url": "https://knaxas.github.io/totk-guesser/",
+                "name": "TotK Guesser",
+                "alternateName": ["TotK Guessr", "Tears of the Kingdom Guesser", "Hyrule Guesser"],
+                "inLanguage": "en"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://knaxas.github.io/totk-guesser/#game",
+                "name": "TotK Guesser",
+                "url": "https://knaxas.github.io/totk-guesser/",
+                "description": "Play TotK Guesser for free – the GeoGuessr game for Zelda: Tears of the Kingdom. Find real in-game screenshots on the Surface, Sky Islands and Depths of Hyrule.",
+                "image": "https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg",
+                "applicationCategory": "GameApplication",
+                "genre": "Geography guessing game",
+                "operatingSystem": "Any",
+                "browserRequirements": "Requires JavaScript and a modern web browser",
+                "isAccessibleForFree": true,
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@type": "Person", "name": "Maxas" },
+                "about": { "@type": "VideoGame", "name": "The Legend of Zelda: Tears of the Kingdom" },
+                "isPartOf": { "@id": "https://knaxas.github.io/totk-guesser/#website" }
+            }
+        ]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="zonai-particles" id="particles"></div>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        @font-face {
-            font-family: 'ZeldaFont';
-            src: url('assets/fonts/Nin-ZeldaGlyphs-v2-Deco.bfotf.otf') format('opentype');
-        }
-
         :root {
-            --zonai-teal: #00ffc3;
-            --zonai-glow: rgba(0, 255, 195, 0.6);
-            --gold-accent: #f3d068;
-            --gold-glow: rgba(243, 208, 104, 0.5);
-            --dark-bg: rgba(8, 14, 20, 0.85);
-            --panel-bg: rgba(14, 22, 32, 0.7);
+            color-scheme: dark;
+            --label: #f5f5f7;
+            --label-2: rgba(235, 235, 245, 0.6);
+            --label-3: rgba(235, 235, 245, 0.3);
+            --material: rgba(28, 28, 30, 0.72);
+            --grouped: rgba(44, 44, 46, 0.55);
+            --fill: rgba(118, 118, 128, 0.24);
+            --fill-2: rgba(118, 118, 128, 0.16);
+            --separator: rgba(84, 84, 88, 0.55);
+            --hairline: rgba(255, 255, 255, 0.1);
+            --blue: #0a84ff;
+            --green: #30d158;
+            --red: #ff453a;
+            --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+            --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
+
+        html { background: #000; }
 
         body {
-            background-image: radial-gradient(circle at center, rgba(5, 15, 20, 0.4) 0%, rgba(2, 5, 8, 0.95) 100%), url("assets/images/totkBackground.png");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
             margin: 0;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            font-family: "Poppins", sans-serif;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(48px, 11vh, 120px) 20px 32px;
+            font-family: var(--font);
+            font-size: 15px;
+            letter-spacing: -0.01em;
+            color: var(--label);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
-            position: relative;
         }
 
-        .zonai-particles {
+        button, input, a { font: inherit; color: inherit; letter-spacing: inherit; }
+        button { cursor: pointer; }
+        :focus-visible { outline: 3px solid rgba(10, 132, 255, 0.6); outline-offset: 2px; }
+
+        svg {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: #000;
+        }
+
+        .backdrop img {
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            background: var(--zonai-teal);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--zonai-teal), 0 0 20px var(--zonai-teal);
+            object-fit: cover;
             opacity: 0;
-            animation: floatUp linear infinite;
+            transform: scale(1.06);
+            transition: opacity 1.6s ease, transform 8s var(--ease-out);
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
-            20% { opacity: 0.8; }
-            80% { opacity: 0.8; }
-            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        .backdrop img.show {
+            opacity: 0.55;
+            transform: scale(1);
         }
 
-        .image-container {
-            position: relative;
-            z-index: 2;
-            width: clamp(320px, 85vw, 1200px);
-            min-height: clamp(520px, 65vh, 750px);
-            background: var(--dark-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 2px solid rgba(0, 255, 195, 0.4);
-            border-radius: 24px;
+        .backdrop::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 30%, rgba(0, 0, 0, 0.85) 75%, #000 100%);
+        }
+
+        .hero {
+            text-align: center;
+            max-width: 760px;
+            animation: rise 0.9s var(--ease-out) both;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
             overflow: hidden;
-            display: flex;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9),
-                        0 0 40px rgba(0, 255, 195, 0.25),
-                        inset 0 0 20px rgba(0, 255, 195, 0.15);
-            animation: containerEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
         }
 
-        .image-container::before {
+        .how-title {
+            width: min(760px, 100%);
+            margin: 56px 0 0;
+            padding-left: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--label-2);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--label);
+        }
+
+        .eyebrow img { width: 34px; height: 34px; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)); }
+
+        .headline {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: clamp(44px, 8vw, 80px);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.045em;
+        }
+
+        .subhead {
+            margin: 18px auto 0;
+            max-width: 560px;
+            font-size: clamp(17px, 2.2vw, 21px);
+            line-height: 1.4;
+            letter-spacing: -0.015em;
+            color: var(--label-2);
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(16px); }
+        }
+
+        .card {
+            width: min(520px, 100%);
+            margin-top: clamp(36px, 6vh, 56px);
+            padding: 20px;
+            border-radius: 32px;
+            background: rgba(28, 28, 32, 0.64);
+            backdrop-filter: blur(30px) saturate(140%);
+            -webkit-backdrop-filter: blur(30px) saturate(140%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.14),
+                inset 0 0 0 0.5px rgba(255, 255, 255, 0.1),
+                0 30px 80px rgba(0, 0, 0, 0.5);
+            animation: rise 0.9s 0.12s var(--ease-out) both;
+        }
+
+        .group-title {
+            margin: 0 0 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--label-2);
+        }
+
+        .group {
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.22);
+            margin-bottom: 8px;
+        }
+
+        .row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 52px;
+            padding: 8px 12px 8px 16px;
+        }
+
+        .row + .row::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -150%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 195, 0.08), transparent);
-            transform: skewX(-25deg);
-            animation: shinePass 6s infinite ease-in-out;
-            pointer-events: none;
+            left: 16px;
+            right: 0;
+            border-top: 0.5px solid var(--separator);
         }
 
-        @keyframes shinePass {
-            0% { left: -150%; }
-            20% { left: 150%; }
-            100% { left: 150%; }
+        .row-label {
+            flex: 1;
+            font-size: 16px;
         }
 
-        @keyframes containerEntrance {
-            0% { opacity: 0; transform: translateY(40px) scale(0.92); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        .footnote {
+            min-height: 18px;
+            margin: 0 16px 20px;
+            font-size: 13px;
+            line-height: 1.35;
+            color: var(--label-2);
         }
 
-        .left-content {
-            flex: 3.5;
+        .footnote.error { color: var(--red); }
+        .footnote.ok { color: var(--green); }
+
+        .segmented {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            padding: clamp(2rem, 3.5vw, 4.5rem);
-            background: linear-gradient(135deg, rgba(16, 28, 38, 0.85), rgba(6, 12, 18, 0.95));
-            text-align: center;
-            position: relative;
-        }
-
-        .left-content h1 {
-            font-family: 'ZeldaFont', 'Cinzel', serif;
-            font-size: clamp(2.2rem, 3.8vw, 4.5rem);
-            font-weight: 900;
-            margin: 0 0 1.5rem 0;
-            color: #ffffff;
-            letter-spacing: 3px;
-            text-shadow: 0 0 12px var(--zonai-glow), 0 0 30px var(--zonai-teal), 0 4px 8px rgba(0,0,0,0.8);
-            animation: pulseTitle 3s infinite alternate;
-        }
-
-        @keyframes pulseTitle {
-            0% { text-shadow: 0 0 10px var(--zonai-glow), 0 0 20px rgba(0, 255, 195, 0.3); }
-            100% { text-shadow: 0 0 20px var(--zonai-glow), 0 0 40px rgba(0, 255, 195, 0.8), 0 0 60px rgba(0, 255, 195, 0.4); }
-        }
-
-        .left-content .inputs {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: clamp(1.2rem, 1.8vw, 2.2rem);
             width: 100%;
-        }
-
-        p.input-label {
-            margin: 0 0 8px 0;
-            color: var(--gold-accent);
-            font-family: 'ZeldaFont', 'Cinzel', serif;
-            font-size: clamp(1.3rem, 1.8vw, 2.2rem);
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--gold-glow), 0 2px 4px rgba(0, 0, 0, 0.9);
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: clamp(350px, 45vw, 650px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .input-field-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .left-content input {
-            width: 100%;
-            padding: clamp(0.8rem, 1.1vw, 1.3rem) clamp(1rem, 1.5vw, 2rem) clamp(0.8rem, 1.1vw, 1.3rem) clamp(3rem, 4vw, 5rem);
-            border: 1px solid rgba(0, 255, 195, 0.3);
+            padding: 2px;
+            gap: 2px;
             border-radius: 12px;
-            background: rgba(4, 10, 15, 0.75);
-            color: #fff;
-            text-align: center;
-            font-size: clamp(1rem, 1.3vw, 1.6rem);
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.25);
         }
 
-        .left-content input:focus {
-            outline: none;
-            border-color: var(--zonai-teal);
-            box-shadow: 0 0 25px var(--zonai-glow), inset 0 2px 4px rgba(0, 0, 0, 0.8);
-            background: rgba(2, 6, 10, 0.9);
-            transform: scale(1.02);
-        }
-
-        .input-icon-inside {
-            position: absolute;
-            width: clamp(26px, 2.2vw, 42px);
-            height: clamp(26px, 2.2vw, 42px);
-            left: clamp(12px, 1.2vw, 20px);
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            filter: drop-shadow(0 0 6px var(--zonai-teal));
-            transition: transform 0.3s ease;
-        }
-
-        .input-field-container:focus-within .input-icon-inside {
-            transform: translateY(-50%) scale(1.25) rotate(-5deg);
-        }
-
-        #seed-feedback {
-            min-height: 22px;
-            margin-top: 8px;
-            font-size: clamp(0.85rem, 1vw, 1.1rem) !important;
-            color: var(--zonai-teal);
-            text-shadow: 0 0 8px var(--zonai-glow);
-            transition: all 0.3s ease;
-        }
-
-        .left-content button {
-            width: 100%;
-            max-width: clamp(350px, 45vw, 650px);
-            padding: clamp(0.8rem, 1.1vw, 1.3rem);
-            border: 1px solid var(--zonai-teal);
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: clamp(0.9rem, 1.1vw, 1.3rem);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, rgba(0, 255, 195, 0.12), rgba(0, 255, 195, 0.02));
-            color: var(--zonai-teal);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .left-content button:hover {
-            background: var(--zonai-teal);
-            color: #02070a;
-            box-shadow: 0 0 35px var(--zonai-glow), 0 8px 25px rgba(0, 0, 0, 0.6);
-            transform: translateY(-3px) scale(1.01);
-        }
-
-        .left-content button:active {
-            transform: translateY(1px) scale(0.99);
-        }
-
-        #applyChanges {
-            margin-top: 1.5rem;
-            background: linear-gradient(135deg, rgba(243, 208, 104, 0.25), rgba(243, 208, 104, 0.05));
-            border: 2px solid var(--gold-accent);
-            color: var(--gold-accent);
-            font-size: clamp(1.3rem, 1.6vw, 2rem);
-            font-weight: 800;
-            padding: clamp(1rem, 1.3vw, 1.6rem);
-            box-shadow: 0 0 20px rgba(243, 208, 104, 0.2), 0 8px 25px rgba(0,0,0,0.5);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-
-        #applyChanges:hover {
-            background: linear-gradient(135deg, #f3d068, #e5b332);
-            color: #000;
-            box-shadow: 0 0 45px rgba(243, 208, 104, 0.8), 0 10px 30px rgba(0, 0, 0, 0.8);
-            transform: translateY(-4px) scale(1.02);
-        }
-
-        .right-content {
-            flex: 1.2;
-            background: rgba(6, 10, 14, 0.9);
-            padding: clamp(1.5rem, 2.5vw, 3rem) clamp(1rem, 1.5vw, 2rem);
+        .diff {
+            flex: 1;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
+            gap: 6px;
+            padding: 7px 6px;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--label-2);
+            transition: background 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+        }
+
+        .diff img { width: 16px; height: 16px; }
+
+        .diff:hover:not([aria-checked="true"]) { background: rgba(255, 255, 255, 0.05); }
+
+        .diff[aria-checked="true"] {
+            background: rgba(255, 255, 255, 0.16);
+            color: var(--label);
+            font-weight: 600;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .stepper {
+            display: flex;
             align-items: center;
-            border-left: 2px solid rgba(0, 255, 195, 0.15);
-            gap: clamp(1.5rem, 2.5vw, 3rem);
-            position: relative;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        .right-content p {
-            letter-spacing: 3px;
-            font-family: 'ZeldaFont', 'Cinzel', serif;
-            font-size: clamp(1.5rem, 2.2vw, 2.6rem);
-            font-weight: 900;
-            margin: 0;
-            color: var(--gold-accent);
-            text-shadow: 0 0 12px var(--gold-glow);
+        .stepper button {
+            width: 44px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            background: transparent;
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1;
+            transition: background 0.15s ease;
         }
 
-        .right-content img {
-            width: clamp(65px, 6.5vw, 120px);
-            height: clamp(65px, 6.5vw, 120px);
-            object-fit: contain;
-            border-radius: 16px;
-            padding: clamp(8px, 1vw, 14px);
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: rupeeFloat 4s infinite ease-in-out alternate;
+        .stepper button:first-child { border-radius: 12px 0 0 12px; }
+        .stepper button:last-child { border-radius: 0 12px 12px 0; }
+        .stepper button:hover:not(:disabled) { background: var(--fill-2); }
+        .stepper button:disabled { color: var(--label-3); cursor: default; }
+
+        .stepper input {
+            width: 44px;
+            height: 32px;
+            border: 0;
+            border-left: 0.5px solid var(--separator);
+            border-right: 0.5px solid var(--separator);
+            background: transparent;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            -moz-appearance: textfield;
         }
 
-        .right-content img:nth-child(2) { animation-delay: 0s; }
-        .right-content img:nth-child(3) { animation-delay: 1.3s; }
-        .right-content img:nth-child(4) { animation-delay: 2.6s; }
+        .stepper input:focus { outline: none; background: var(--fill-2); }
+        .stepper input::-webkit-inner-spin-button,
+        .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-        @keyframes rupeeFloat {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-8px); }
+        #seed {
+            flex: 1;
+            min-width: 0;
+            height: 36px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+            font-size: 15px;
+            letter-spacing: 0;
+            color: var(--label);
         }
 
-        .right-content img:hover {
-            transform: scale(1.25) rotate(5deg) !important;
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--gold-accent);
-            box-shadow: 0 0 25px rgba(243, 208, 104, 0.4);
+        #seed::placeholder { color: var(--label-3); font-family: var(--font); }
+        #seed:focus { outline: none; }
+        #seed.invalid { color: var(--red); }
+
+        .icon-btn {
+            flex: none;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: 50%;
+            background: var(--fill-2);
+            color: var(--blue);
+            transition: background 0.15s ease, transform 0.2s var(--ease-out);
         }
 
-        .right-content img[style*="drop-shadow"] {
-            transform: scale(1.18) !important;
-            border-color: var(--gold-accent);
-            background: rgba(243, 208, 104, 0.15);
-            box-shadow: 0 0 30px rgba(243, 208, 104, 0.5), inset 0 0 15px rgba(243, 208, 104, 0.3);
+        .icon-btn svg { width: 17px; height: 17px; }
+        .icon-btn:hover { background: var(--fill); }
+        #start:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.7); }
+        .icon-btn:active { transform: scale(0.92); }
+        .icon-btn.spin svg { animation: spin 0.5s var(--ease-out); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #start {
+            width: 100%;
+            padding: 15px;
+            border: 0;
+            border-radius: 18px;
+            background: var(--blue);
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            transition: background 0.2s ease, transform 0.2s var(--ease-out);
         }
 
-        @media screen and (max-width: 850px) {
-            body {
-                overflow-y: auto;
-                align-items: flex-start;
-            }
+        #start:hover:not(:disabled) { background: #2b95ff; }
+        #start:active:not(:disabled) { transform: scale(0.985); }
+        #start:disabled { background: var(--fill-2); color: var(--label-3); cursor: default; }
 
-            .image-container {
-                flex-direction: column;
-                width: 100%;
-                min-height: auto;
-            }
+        .shake { animation: shake 0.4s ease; }
+        @keyframes shake {
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
 
-            .right-content {
-                flex-direction: row;
-                flex-wrap: wrap;
-                border-left: none;
-                border-top: 2px solid rgba(0, 255, 195, 0.15);
-            }
+        .best {
+            min-height: 18px;
+            margin: 12px 0 0;
+            text-align: center;
+            font-size: 13px;
+            color: var(--label-2);
+        }
 
-            .right-content p {
-                width: 100%;
-                text-align: center;
+        .best strong { color: var(--label); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: min(760px, 100%);
+            margin: 10px 0 0;
+            padding: 0;
+            list-style: none;
+            animation: rise 0.9s 0.24s var(--ease-out) both;
+        }
+
+        .steps li {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(28, 28, 32, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--label-2);
+        }
+
+        .steps strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--label);
+        }
+
+        .steps svg {
+            width: 26px;
+            height: 26px;
+            margin-bottom: 10px;
+            color: var(--blue);
+            stroke-width: 1.8;
+        }
+
+        footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 20px;
+            margin-top: auto;
+            padding-top: 48px;
+            font-size: 12px;
+            color: var(--label-3);
+        }
+
+        footer a { color: var(--label-2); text-decoration: none; }
+        footer a:hover { color: var(--label); }
+        footer img { height: 13px; vertical-align: -2px; }
+
+        @media (max-width: 640px) {
+            body { padding-top: 40px; }
+            .card { padding: 14px; border-radius: 22px; }
+            .steps { grid-template-columns: 1fr; }
+            .how-title { margin-top: 32px; }
+            .diff { font-size: 13px; }
+            .diff img { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
+</head>
+<body>
+    <div class="backdrop" aria-hidden="true"><img id="backdrop" alt=""></div>
 
-    <div class="image-container">
-      <div class="left-content">
-        <h1>Welcome to the TotK-Guesser!</h1>
-        <div class="inputs">
-          <div class="input-wrapper">
-            <p class="input-label">Your Seed:</p>
-            <div class="input-field-container">
-                <img src="assets/images/icons/Obj_KorokNuts.png" alt="Seed Icon" class="input-icon-inside" />
-                <input
-                  id="seed"
-                  title="Not available yet"
-                  type="text"
-                  placeholder="Seed"
-                />
+    <header class="hero">
+        <h1 class="eyebrow"><img src="assets/images/icons/logo.svg" alt="">TotK Guesser<span class="visually-hidden"> – GeoGuessr for Zelda: Tears of the Kingdom</span></h1>
+        <p class="headline">Where in Hyrule<br>are you?</p>
+        <p class="subhead">One screenshot. One pin. From the Sky Islands down to the Depths – find the spot and score up to 5,000 points per image.</p>
+    </header>
+
+    <main class="card">
+        <p class="group-title" id="diff-title">Difficulty</p>
+        <div class="group">
+            <div class="row">
+                <div class="segmented" role="radiogroup" aria-labelledby="diff-title">
+                    <button type="button" class="diff" role="radio" data-difficulty="easy">
+                        <img src="assets/images/icons/PutRupee.png" alt="">Easy
+                    </button>
+                    <button type="button" class="diff" role="radio" data-difficulty="medium">
+                        <img src="assets/images/icons/PutRupee_Gold.png" alt="">Medium
+                    </button>
+                    <button type="button" class="diff" role="radio" data-difficulty="hard">
+                        <img src="assets/images/icons/PutRupee_Red.png" alt="">Hard
+                    </button>
+                </div>
             </div>
-            <p id="seed-feedback"></p>
-            <button style="margin-top: 6px;" onclick="generateRandomSeed()">Generate random Seed</button>
-          </div>
-          
-          <div class="input-wrapper">
-            <p class="input-label">Rounds:</p>
-            <div class="input-field-container">
-                <img src="assets/images/icons/Obj_TreasureMap_00.png" alt="Rounds Icon" class="input-icon-inside" />
-                <input id="playableRounds" type="number" value="5" max="15" min="3" placeholder="Rounds" />
+            <div class="row">
+                <label class="row-label" for="rounds">Rounds</label>
+                <div class="stepper">
+                    <button type="button" id="rounds-minus" aria-label="Fewer rounds">−</button>
+                    <input id="rounds" type="number" min="3" max="15" value="5" inputmode="numeric">
+                    <button type="button" id="rounds-plus" aria-label="More rounds">+</button>
+                </div>
             </div>
-          </div>
         </div>
-        <button onclick="startGame()" id="applyChanges">Start Game</button>
-      </div>
+        <p class="footnote" id="diff-note">Surface, Sky Islands and Depths.</p>
 
-      <div id="difficulty-selecter" class="right-content">
-        <p>Difficulty</p>
-        <img title="hard" src="assets/images/icons/PutRupee_Red.png" alt="Hard" />
-        <img title="medium" src="assets/images/icons/PutRupee_Gold.png" alt="Medium" />
-        <img title="easy" src="assets/images/icons/PutRupee.png" alt="Easy" />
-      </div>
-    </div>
-  
+        <p class="group-title"><label for="seed">Seed</label></p>
+        <div class="group">
+            <div class="row">
+                <input id="seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+                       placeholder="Paste a seed or link" aria-describedby="seed-feedback">
+                <button type="button" class="icon-btn" id="reroll" title="New random seed" aria-label="New random seed">
+                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v5h-5"/></svg>
+                </button>
+                <button type="button" class="icon-btn" id="copy" title="Copy challenge link" aria-label="Copy challenge link">
+                    <svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+                </button>
+            </div>
+        </div>
+        <p class="footnote" id="seed-feedback" aria-live="polite">Same seed, same images – share it to challenge a friend.</p>
+
+        <button type="button" id="start">Start Game</button>
+        <p class="best" id="best"></p>
+    </main>
+
+    <h2 class="how-title">How to play</h2>
+    <ol class="steps">
+        <li>
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <strong>Look closely.</strong>Zoom into the screenshot and search for landmarks.
+        </li>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+            <strong>Pick the layer.</strong>Sky, Surface or Depths – a wrong layer scores zero.
+        </li>
+        <li>
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            <strong>Drop your pin.</strong>The closer you are, the more points you get.
+        </li>
+    </ol>
+
+    <footer>
+        <span>Made with <img src="assets/images/icons/Obj_HeartUtuwa_A_01.png" alt="love"> by Maxas</span>
+        <a href="credits.html">Credits</a>
+        <a href="https://github.com/knaxas/totk-guesser" target="_blank" rel="noopener">GitHub</a>
+        <span>Not affiliated with Nintendo.</span>
+    </footer>
+
+    <script src="play/shared.js"></script>
     <script>
-      function createParticles() {
-        const container = document.getElementById('particles');
-        const particleCount = 25;
-        for (let i = 0; i < particleCount; i++) {
-          const particle = document.createElement('div');
-          particle.classList.add('particle');
-          const size = Math.random() * 4 + 2;
-          particle.style.width = `${size}px`;
-          particle.style.height = `${size}px`;
-          particle.style.left = `${Math.random() * 100}%`;
-          particle.style.animationDuration = `${Math.random() * 6 + 4}s`;
-          particle.style.animationDelay = `${Math.random() * 5}s`;
-          container.appendChild(particle);
-        }
-      }
+    (() => {
+        const $ = (id) => document.getElementById(id);
+        const seedInput = $("seed");
+        const feedback = $("seed-feedback");
+        const roundsInput = $("rounds");
+        const startBtn = $("start");
+        const diffButtons = [...document.querySelectorAll(".diff")];
+        const DEFAULT_NOTE = "Same seed, same images – share it to challenge a friend.";
+        const DIFF_NOTES = {
+            easy: "Surface only. A good place to start.",
+            medium: "Surface and Sky Islands.",
+            hard: "Surface, Sky Islands and Depths.",
+        };
 
-      function calculateSeed(imageNumber) {
-        let seed = imageNumber * 137;
-        seed = (seed * 19 + 123456) % 1000000;
-        return seed;
-      }
-  
-      async function fetchLocations() {
-        const response = await fetch("assets/images/locations/locations.json");
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        return response.json();
-      }
-  
-      async function generateRandomSeed() {
-        const maxRounds = parseInt(localStorage.getItem("maxRounds") || 5, 10);
-        const difficulty = localStorage.getItem("difficulty") || "hard";
-        const locations = await fetchLocations();
-  
-        const filteredImages = Object.keys(locations).filter(key => {
-          const [layer] = locations[key].split("_");
-          if (difficulty === "easy") return layer === "surface";
-          if (difficulty === "medium") return layer === "surface" || layer === "sky";
-          return true;
-        });
-  
-        const seeds = [];
-        for (let i = 0; i < maxRounds; i++) {
-          const randomIndex = Math.floor(Math.random() * filteredImages.length);
-          const imageKey = filteredImages[randomIndex];
-          const imageNumber = parseInt(imageKey.replace("img", ""), 10);
-          seeds.push(calculateSeed(imageNumber));
-        }
-  
-        const seedString = seeds.join("&");
-        document.getElementById("seed").value = seedString;
-        localStorage.setItem("currentSeed", seedString);
-      }
-  
-      async function validateSeed(seed) {
-        const locations = await fetchLocations();
-        const feedbackElement = document.getElementById("seed-feedback");
+        let locations = [];
+        let settings = TG.getSettings();
+        let generated = null;
+        let currentRounds = [];
 
-        if (!seed.match(/^(\d{1,6}&)*\d{1,6}$/)) {
-          feedbackElement.textContent = "Invalid format. Seed should be numbers separated by '&'.";
-          return false;
+        function showBackdrop() {
+            const pool = locations.filter((l) => l.layer !== "depths");
+            if (!pool.length) return;
+            const loc = pool[Math.floor(Math.random() * pool.length)];
+            const img = $("backdrop");
+            img.onload = () => img.classList.add("show");
+            img.onerror = () => { img.onerror = null; img.src = TG.imageFallbackUrl(loc); };
+            img.src = TG.imageUrl(loc);
         }
 
-        const parts = seed.split("&");
-        if (parts.length < 3) {
-          feedbackElement.textContent = "Seed must have at least 3 rounds.";
-          return false;
-        }
-        if (parts.length > 15) {
-          feedbackElement.textContent = "Seed cannot have more than 15 rounds.";
-          return false;
+        function setFeedback(text, kind = "") {
+            feedback.textContent = text;
+            feedback.className = `footnote ${kind}`;
         }
 
-        const difficulty = localStorage.getItem("difficulty") || "hard";
-        let detectedDifficulty = "easy";
-        const filteredImages = Object.keys(locations).filter(key => {
-          const [layer] = locations[key].split("_");
-          if (difficulty === "easy") return layer === "surface";
-          if (difficulty === "medium") return layer === "surface" || layer === "sky";
-          return true;
-        });
-
-        for (const part of parts) {
-          const seedNumber = parseInt(part, 10);
-          const matchingImage = Object.keys(locations).find(key => {
-            const imageNumber = parseInt(key.replace("img", ""), 10);
-            return calculateSeed(imageNumber) === seedNumber;
-          });
-
-          if (!matchingImage) {
-            feedbackElement.textContent = "Seed numbers do not match available images.";
-            return false;
-          }
-
-          const [layer] = locations[matchingImage].split("_");
-          if (layer === "surface") detectedDifficulty = "easy";
-          else if (layer === "sky" && detectedDifficulty !== "hard") detectedDifficulty = "medium";
-          else if (layer === "depths") detectedDifficulty = "hard";
+        function renderDifficulty() {
+            diffButtons.forEach((b) => b.setAttribute("aria-checked", b.dataset.difficulty === settings.difficulty));
+            $("diff-note").textContent = DIFF_NOTES[settings.difficulty];
         }
 
-        const roundsInput = document.getElementById("playableRounds");
-        const difficultySelector = document.getElementById("difficulty-selecter");
-
-        if (detectedDifficulty !== difficulty) {
-          localStorage.setItem("difficulty", detectedDifficulty);
-
-          const images = difficultySelector.querySelectorAll("img");
-          images.forEach(img => img.style.filter = "");
-          const selectedImage = Array.from(images).find(img => img.title === detectedDifficulty);
-          if (selectedImage) {
-            selectedImage.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
-          }
-
-          feedbackElement.textContent = `Difficulty automatically adjusted to "${detectedDifficulty}".`;
+        function maxRounds() {
+            return locations.length ? TG.maxRoundsFor(locations, settings.difficulty) : TG.MAX_ROUNDS;
         }
 
-        if (parts.length !== parseInt(localStorage.getItem("maxRounds"), 10)) {
-          localStorage.setItem("maxRounds", parts.length);
-          roundsInput.value = parts.length;
-
-          feedbackElement.textContent += ` Rounds automatically adjusted to ${parts.length}.`;
+        function renderRounds() {
+            roundsInput.max = maxRounds();
+            roundsInput.value = settings.rounds;
+            $("rounds-minus").disabled = settings.rounds <= TG.MIN_ROUNDS;
+            $("rounds-plus").disabled = settings.rounds >= maxRounds();
         }
 
-        feedbackElement.textContent += " Seed is valid.";
-        return true;
-      }
+        function renderBest() {
+            const best = TG.store.get(`best:${settings.difficulty}:${settings.rounds}`);
+            const label = TG.DIFFICULTIES[settings.difficulty].label;
+            $("best").innerHTML = best
+                ? `Your best on ${label} with ${settings.rounds} images: <strong>${Number(best).toLocaleString("en-US")}</strong>`
+                : "";
+        }
 
-      document.addEventListener("DOMContentLoaded", async () => {
-        createParticles();
-        const savedSeed = localStorage.getItem("currentSeed");
-        if (savedSeed) {
-          document.getElementById("seed").value = savedSeed;
-        } else {
-          await generateRandomSeed();
+        function seedFromRounds(rounds) {
+            return TG.joinSeeds(rounds.map((r) => TG.encodeSeed(r.n)));
         }
-  
-        applyGlowEffect();
-        setupEventListeners();
-      });
-  
-      function setupEventListeners() {
-        const seedInput = document.getElementById("seed");
-        seedInput.addEventListener("input", async () => {
-          const seed = seedInput.value;
-          const isValid = await validateSeed(seed);
-          if (isValid) {
-            localStorage.setItem("currentSeed", seed);
-          }
-        });
-  
-        const roundsInput = document.getElementById("playableRounds");
-        roundsInput.addEventListener("change", async () => {
-          localStorage.setItem("maxRounds", roundsInput.value);
-          await generateRandomSeed();
-        });
-  
-        const difficultySelector = document.getElementById("difficulty-selecter");
-        difficultySelector.addEventListener("click", async (event) => {
-          if (event.target.tagName === "IMG") {
-            const images = document.querySelectorAll("#difficulty-selecter img");
-            images.forEach(img => img.style.filter = "");
-            event.target.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
-            localStorage.setItem("difficulty", event.target.title);
-            await generateRandomSeed();
-          }
-        });
-      }
-  
-      function applyGlowEffect() {
-        const difficulty = localStorage.getItem("difficulty") || "hard";
-  
-        const images = document.querySelectorAll("#difficulty-selecter img");
-        images.forEach(img => img.style.filter = "");
-  
-        const selectedImage = Array.from(images).find(img => img.title === difficulty);
-        if (selectedImage) {
-          selectedImage.style.filter = "drop-shadow(0 0 1rem rgb(255, 217, 0))";
+
+        function regenerate() {
+            if (!locations.length) return;
+            settings.rounds = Math.min(settings.rounds, maxRounds());
+            TG.saveSettings(settings);
+            currentRounds = TG.generateRounds(locations, settings.difficulty, settings.rounds);
+            generated = seedFromRounds(currentRounds);
+            seedInput.value = generated;
+            seedInput.classList.remove("invalid");
+            startBtn.disabled = false;
+            setFeedback(DEFAULT_NOTE);
+            renderRounds();
+            renderBest();
+            const btn = $("reroll");
+            btn.classList.remove("spin");
+            void btn.offsetWidth;
+            btn.classList.add("spin");
         }
-  
-        document.getElementById("playableRounds").value = localStorage.getItem("maxRounds") || 5;
-      }
-  
-      function startGame() {
-        const seed = document.getElementById("seed").value;
-        if (seed) {
-          window.location.href = `guess?seed=${seed}`;
-        } else {
-          alert("Please generate a seed first.");
+
+        function seedPartsFromInput(value) {
+            const idx = value.indexOf("seed=");
+            if (idx !== -1) return TG.seedPartsFromUrl("?" + value.slice(idx));
+            return TG.splitSeedString(value);
         }
-      }
+
+        function validateInput() {
+            const value = seedInput.value.trim();
+            if (!value) {
+                currentRounds = [];
+                seedInput.classList.remove("invalid");
+                startBtn.disabled = false;
+                setFeedback("No seed – a random game will be created.");
+                return;
+            }
+            const parts = seedPartsFromInput(value);
+            const { rounds, invalid } = TG.resolveSeeds(parts, locations);
+            let error = "";
+            if (!parts.length) error = "A seed is a list of numbers, like 201546-256209-133868.";
+            else if (invalid.length) error = `${invalid.length === 1 ? "This number doesn't" : "These numbers don't"} match any image: ${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "…" : ""}`;
+            else if (rounds.length < TG.MIN_ROUNDS) error = `A seed needs at least ${TG.MIN_ROUNDS} images (this one has ${rounds.length}).`;
+            else if (rounds.length > TG.MAX_ROUNDS) error = `A seed can have at most ${TG.MAX_ROUNDS} images (this one has ${rounds.length}).`;
+
+            seedInput.classList.toggle("invalid", !!error);
+            startBtn.disabled = !!error;
+            if (error) {
+                currentRounds = [];
+                setFeedback(error, "error");
+                return;
+            }
+
+            currentRounds = rounds;
+            settings.difficulty = TG.difficultyForRounds(rounds);
+            settings.rounds = rounds.length;
+            TG.saveSettings(settings);
+            renderDifficulty();
+            renderRounds();
+            renderBest();
+            if (seedFromRounds(rounds) !== generated) {
+                setFeedback(`Valid seed · ${rounds.length} images · ${TG.DIFFICULTIES[settings.difficulty].label}`, "ok");
+            }
+        }
+
+        function start() {
+            if (startBtn.disabled) {
+                startBtn.classList.remove("shake");
+                void startBtn.offsetWidth;
+                startBtn.classList.add("shake");
+                seedInput.focus();
+                return;
+            }
+            if (!currentRounds.length) {
+                window.location.href = "guess.html";
+                return;
+            }
+            const seed = seedFromRounds(currentRounds);
+            if (seed === generated) TG.rememberPlayed(currentRounds);
+            window.location.href = `guess.html?seed=${seed}`;
+        }
+
+        async function copyLink() {
+            if (!currentRounds.length) return;
+            const url = new URL("guess.html", window.location.href);
+            url.search = `?seed=${seedFromRounds(currentRounds)}`;
+            const text = url.toString();
+            let ok = false;
+            try {
+                await navigator.clipboard.writeText(text);
+                ok = true;
+            } catch {
+                seedInput.select();
+                try { ok = document.execCommand("copy"); } catch {}
+            }
+            setFeedback(ok ? "Challenge link copied." : "Couldn't copy – just copy the seed above.", ok ? "ok" : "error");
+        }
+
+        diffButtons.forEach((b) =>
+            b.addEventListener("click", () => {
+                settings.difficulty = b.dataset.difficulty;
+                renderDifficulty();
+                regenerate();
+            })
+        );
+
+        function changeRounds(n) {
+            settings.rounds = Math.min(TG.clampRounds(n), maxRounds());
+            regenerate();
+        }
+
+        $("rounds-minus").addEventListener("click", () => changeRounds(settings.rounds - 1));
+        $("rounds-plus").addEventListener("click", () => changeRounds(settings.rounds + 1));
+        roundsInput.addEventListener("change", () => changeRounds(roundsInput.value));
+        roundsInput.addEventListener("keydown", (e) => e.key === "Enter" && changeRounds(roundsInput.value));
+
+        $("reroll").addEventListener("click", regenerate);
+        $("copy").addEventListener("click", copyLink);
+        seedInput.addEventListener("input", validateInput);
+        seedInput.addEventListener("keydown", (e) => e.key === "Enter" && start());
+        startBtn.addEventListener("click", start);
+
+        renderDifficulty();
+        renderRounds();
+
+        TG.loadLocations()
+            .then((data) => {
+                locations = data;
+                regenerate();
+                showBackdrop();
+            })
+            .catch((err) => {
+                console.error(err);
+                setFeedback("Could not load the locations. If you opened the file directly, use a local web server.", "error");
+                startBtn.disabled = true;
+            });
+    })();
     </script>
 </body>
 </html>

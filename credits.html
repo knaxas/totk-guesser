@@ -3,25 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TotK Guesser Credits</title>
-    <link rel="shortcut icon" type="x-icon" href="/assets/images/icons/korokmask.png">
-    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="theme-color" content="#000000">
+    <title>Credits – TotK Guesser</title>
+    <meta name="description" content="The people and projects behind TotK Guesser, the free GeoGuessr-style game for Zelda: Tears of the Kingdom.">
     <meta name="author" content="Maxas">
-    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://knaxas.github.io/totk-guesser/credits.html">
+    <link rel="icon" type="image/svg+xml" href="assets/images/icons/logo.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="application-name" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-title" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TotK Guesser">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://knaxas.github.io/totk-guesser/credits.html">
+    <meta property="og:title" content="Credits – TotK Guesser">
+    <meta property="og:description" content="The people and projects behind TotK Guesser, the free GeoGuessr-style game for Zelda: Tears of the Kingdom.">
+    <meta property="og:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Credits – TotK Guesser">
+    <meta name="twitter:description" content="The people and projects behind TotK Guesser, the free GeoGuessr-style game for Zelda: Tears of the Kingdom.">
+    <meta name="twitter:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta name="twitter:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --label: #f5f5f7;
+            --label-2: rgba(235, 235, 245, 0.6);
+            --label-3: rgba(235, 235, 245, 0.3);
+            --grouped: rgba(44, 44, 46, 0.55);
+            --separator: rgba(84, 84, 88, 0.55);
+            --hairline: rgba(255, 255, 255, 0.1);
+            --blue: #0a84ff;
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+            --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(48px, 12vh, 120px) 20px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: #000;
+            font-family: var(--font);
+            font-size: 15px;
+            letter-spacing: -0.01em;
+            color: var(--label);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .card {
+            width: min(480px, 100%);
+            text-align: center;
+            animation: rise 0.8s cubic-bezier(0.25, 1, 0.5, 1) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(14px); }
+        }
+
+        .card > img { width: 96px; filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5)); }
+
+        h1 {
+            margin: 12px 0 36px;
+            font-family: var(--font-display);
+            font-size: clamp(40px, 9vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.045em;
+        }
+
+        h2 {
+            margin: 0 0 8px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--label-2);
+        }
+
+        ul {
+            list-style: none;
+            margin: 0 0 28px;
+            padding: 0;
+            border-radius: 14px;
+            background: var(--grouped);
+            text-align: left;
+        }
+
+        li {
+            position: relative;
+            padding: 14px 16px;
+            font-size: 16px;
+        }
+
+        li + li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 16px;
+            right: 0;
+            border-top: 0.5px solid var(--separator);
+        }
+
+        li a {
+            display: flex;
+            justify-content: space-between;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        li a::after {
+            content: '›';
+            font-size: 20px;
+            line-height: 1;
+            color: var(--label-3);
+        }
+
+        li a:hover { color: var(--blue); }
+
+        .note {
+            margin: 0 16px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--label-2);
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 36px;
+            padding: 13px 28px;
+            border-radius: 999px;
+            background: var(--blue);
+            color: #fff;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .back:hover { background: #2b95ff; }
+    </style>
 </head>
 <body>
-    <div id="people"></div>
+    <main class="card">
+        <img src="assets/images/icons/logo.svg" alt="">
+        <h1>Credits</h1>
+
+        <h2>Made by</h2>
+        <ul id="people"><li>Loading…</li></ul>
+
+        <h2>Built with</h2>
+        <ul>
+            <li><a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></li>
+            <li><a href="https://hyruleguessr.com" target="_blank" rel="noopener">HyruleGuessr – the inspiration</a></li>
+        </ul>
+
+        <p class="note">
+            TotK Guesser is a non-commercial fan project.<br>
+            The Legend of Zelda: Tears of the Kingdom and all related assets are © Nintendo.
+        </p>
+
+        <a class="back" href="index.html">Back to the game</a>
+    </main>
 
     <script>
-        async function loadContributionPeople() {
-            const response = await fetch("/assets/libraries/credits.json");
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-            const data = await response.json();
-            const peopleHTML = data.names.map(name => `<li>${name}</li>`).join("");
-    
-            document.getElementById("people").innerHTML = `<ul>${peopleHTML}</ul>`;
-        }
-        loadContributionPeople();
+        fetch("assets/libraries/credits.json")
+            .then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then((data) => {
+                const list = document.getElementById("people");
+                list.replaceChildren(
+                    ...data.names.map((name) => {
+                        const li = document.createElement("li");
+                        li.textContent = name;
+                        return li;
+                    })
+                );
+            })
+            .catch(() => {
+                document.getElementById("people").innerHTML = "<li>Max</li><li>Tobias</li>";
+            });
     </script>
 </body>
 </html>

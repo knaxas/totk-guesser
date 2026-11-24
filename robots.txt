@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://knaxas.github.io/totk-guesser/sitemap.xml

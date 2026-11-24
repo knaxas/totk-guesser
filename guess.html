@@ -1,60 +1,114 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>TotK Guesser</title>
-    <link rel="shortcut icon" type="x-icon" href="assets/images/icons/korokmask.png">
-    <meta property="og:image" content="https://github.com/knaxas/totk-guesser/blob/master/assets/images/icons/korokmask.png?raw=true" />
-    <meta name="description" content="The GeoGuesser version for Tears of the Kingdom">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>Play – TotK Guesser</title>
+    <meta name="description" content="Find this spot in Hyrule! A TotK Guesser challenge – same images, same seed. Can you beat the score?">
     <meta name="author" content="Maxas">
-    <meta name="keywords" content="totk-guesser, hyrule-guesser">
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" type="image/svg+xml" href="assets/images/icons/logo.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="application-name" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-title" content="TotK Guesser">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TotK Guesser">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:title" content="Can you find these spots in Hyrule? – TotK Guesser">
+    <meta property="og:description" content="A TotK Guesser challenge: same screenshots, same seed. Find the spots in Tears of the Kingdom and beat the score.">
+    <meta property="og:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Can you find these spots in Hyrule? – TotK Guesser">
+    <meta name="twitter:description" content="A TotK Guesser challenge: same screenshots, same seed. Find the spots in Tears of the Kingdom and beat the score.">
+    <meta name="twitter:image" content="https://knaxas.github.io/totk-guesser/assets/images/og-image.jpg">
+    <meta name="twitter:image:alt" content="TotK Guesser – GeoGuessr for Zelda: Tears of the Kingdom">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 
     <link rel="stylesheet" href="assets/libraries/leaflet/leaflet.min.css">
-    <script src="assets/libraries/leaflet/leaflet.min.js"></script>
-    <link rel="stylesheet" href="assets/libraries/leaflet.markercluster/MarkerCluster.css">
-    <script src="assets/libraries/leaflet.markercluster/leaflet.markercluster.min.js"></script>
-    <script src="assets/libraries/jquery/jquery.min.js"></script>
-
     <link rel="stylesheet" href="play/app.css">
+
+    <script src="assets/libraries/leaflet/leaflet.min.js"></script>
+    <script src="play/shared.js" defer></script>
     <script src="play/app.js" defer></script>
 </head>
 <body>
-    <div class="fw-container">
-        <div id="sidebar">
-            <div id="data-display">
-                <div id="imageTurn">IMG: <x style="color: red;">1</x>/5</div>
-                <div id="score">SCORE: 0</div>
-                <div id="customMessage">Where could this be?</div>
-                <div id="restart" onclick="restart()">Restart</div>
-            </div>
-            <div class="map-switcher">
-                <button id="show-layer-sky" type="button">Sky</button>
-                <button id="show-layer-surface" type="button">Surface</button>
-                <button id="show-layer-depths" type="button">Depths</button>
-                <button id="submit-marker">Submit</button>
-
-            <div class="credit-container">
-                <div>Made with</div>
-                <div><img height="160px" src="assets/images/icons/Obj_HeartUtuwa_A_01.png" alt=""></div>
-                <div>By Maxas</div>
-            </div>
-            </div>
-
+    <main id="stage" class="stage">
+        <div class="backdrop" aria-hidden="true"><img id="backdrop-image" alt=""></div>
+        <div class="image-wrap" id="image-wrap">
+            <img id="location-image" alt="Where in Hyrule is this?" draggable="false">
         </div>
-    
-        <div id="image-container" class="image-container">
-            <img id="location-image" src="" alt="Guess the Image">
-        </div>
-    
-        <div id="totk-map" class="totkMapC"></div>
+        <div class="loader" id="loader"><span></span></div>
 
-        <script>
-            function restart() {
-                const baseUrl = window.location.href.split('?')[0];
-                window.location = baseUrl
-            }
-        </script>
+        <header class="topbar">
+            <a class="glass round-btn" href="index.html" title="Home" aria-label="Home">
+                <img src="assets/images/icons/logo-mark.svg" alt="">
+            </a>
+            <div class="glass hud" id="hud">
+                <div class="stat">
+                    <span class="stat-label">Image</span>
+                    <span class="stat-value" id="round"><b>1</b>/5</span>
+                </div>
+                <div class="progress" id="progress" aria-hidden="true"></div>
+                <div class="stat stat-score">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+            </div>
+            <button type="button" class="glass round-btn" id="restart" title="New game" aria-label="New game">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>
+            </button>
+        </header>
+
+        <div class="zoom-hint" id="zoom-hint"></div>
+
+        <div id="map-wrap" class="map-wrap">
+            <div id="totk-map"></div>
+            <button type="button" class="map-btn map-pin" id="map-pin" title="Keep the map open (M)" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3l6 6-3.5 1.5L14 14l.5 4.5L13 20l-4-4-5 5M9 16l-4-4 1.5-1.5L11 11l3.5-4.5z"/></svg>
+            </button>
+            <button type="button" class="map-btn map-close" id="map-close" title="Close map" aria-label="Close map">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <button type="button" class="map-catcher" id="map-catcher">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                Open map
+            </button>
+        </div>
+
+        <div class="glass dock" id="dock">
+            <div id="message" class="message" aria-live="polite">Loading…</div>
+            <div class="dock-row">
+                <div class="layer-switch" id="layer-switch" role="group" aria-label="Map layer">
+                    <button type="button" data-layer="sky" title="Sky Islands (1)">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/></svg>
+                        <span>Sky</span><kbd>1</kbd>
+                    </button>
+                    <button type="button" data-layer="surface" title="Surface (2)">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19l6-10 4 6 2-3 6 7z"/></svg>
+                        <span>Surface</span><kbd>2</kbd>
+                    </button>
+                    <button type="button" data-layer="depths" title="Depths (3)">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 9h10M10 13h4M12 16v4M9 18l3 3 3-3"/></svg>
+                        <span>Depths</span><kbd>3</kbd>
+                    </button>
+                </div>
+                <button type="button" id="submit" class="primary" title="Space" disabled>Submit Guess</button>
+            </div>
+        </div>
+    </main>
+
+    <noscript><p class="noscript">TotK Guesser needs JavaScript to run.</p></noscript>
 </body>
 </html>

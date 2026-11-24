@@ -1,1044 +1,1007 @@
-let x, y, xImage, yImage, layerImage, currentLayer;
-let score = 0,
-  distance = 0,
-  imageRound = 1,
-  seedForPlayingAgain,
-  seedQueue;
-let maxImages =
-  parseInt(localStorage.getItem("maxRounds"), 10) ||
-  localStorage.setItem("maxRounds", 5);
-let difficulty =
-  localStorage.getItem("difficulty") ||
-  localStorage.setItem("difficulty", "hard");
+(() => {
+  "use strict";
 
-if (isNaN(maxImages) || maxImages < 3 || maxImages > 15) {
-  maxImages = 5;
-  localStorage.setItem("maxRounds", 5);
-}
-
-let markerSet = false;
-let isMultiplayer;
-
-let scale = 1;
-let translateX = 0,
-  translateY = 0;
-const zoomSpeed = 0.3;
-
-let isDragging = false;
-let dragStartX = 0,
-  dragStartY = 0;
-
-window.addEventListener("load", () => {
-  let hoverableMap = true;
-  const totkMap = document.querySelector(".totkMapC") || document.getElementById("totk-map");
-  const imageUsageCount = {};
-
-  const getMapSize = () => {
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      return {
-        hoverWidth: "80%",
-        hoverHeight: "55vh",
-        defaultWidth: "80%",
-        defaultHeight: "10%",
-      };
-    } else {
-      return {
-        hoverWidth: "70%",
-        hoverHeight: "85vh",
-        defaultWidth: "20%",
-        defaultHeight: "25%",
-      };
-    }
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    stage: $("stage"),
+    imageWrap: $("image-wrap"),
+    image: $("location-image"),
+    zoomHint: $("zoom-hint"),
+    mapWrap: $("map-wrap"),
+    mapPin: $("map-pin"),
+    mapClose: $("map-close"),
+    mapCatcher: $("map-catcher"),
+    round: $("round"),
+    score: $("score"),
+    progress: $("progress"),
+    message: $("message"),
+    submit: $("submit"),
+    restart: $("restart"),
+    layerButtons: [...document.querySelectorAll("#layer-switch button")],
   };
-  const size = getMapSize();
-  let resizeAnimationFrame = null;
-  let resizeAnimationStart = 0;
-  const resizeAnimationDuration = 300;
 
-  function stopResizeAnimation() {
-    if (resizeAnimationFrame) {
-      cancelAnimationFrame(resizeAnimationFrame);
-      resizeAnimationFrame = null;
+  const MAX_POINTS = 5000;
+  const canHover = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  const state = {
+    rounds: [],
+    seedString: "",
+    difficulty: "hard",
+    index: 0,
+    results: [],
+    phase: "loading",
+    guess: null,
+    layer: "surface",
+    pinned: false,
+    displayedScore: 0,
+  };
+
+  const totalScore = () => state.results.reduce((sum, r) => sum + r.points, 0);
+  const currentRound = () => state.rounds[state.index];
+  const fmt = (n) => Math.round(n).toLocaleString("en-US");
+
+  function calculateScore(distance) {
+    if (distance <= 90) return MAX_POINTS;
+
+    const excessDistance = distance - 80;
+    const maxExcess = 1000 - 80;
+
+    if (excessDistance >= maxExcess) {
+      return Math.max(Math.round(500 * (1 - (excessDistance - maxExcess) / 4000)), 0);
     }
+    const dropOff = Math.pow(excessDistance / maxExcess, 0.85);
+    return Math.round(MAX_POINTS - (MAX_POINTS - 500) * dropOff);
   }
 
-  function syncMapToContainer() {
-    if (map) {
-      map.invalidateSize({ pan: false });
-    }
+  function pointsColor(points) {
+    if (points >= 4500) return "#30d158";
+    if (points >= 2500) return "#ffd60a";
+    if (points > 0) return "#ff9f0a";
+    return "#ff453a";
   }
 
-  function animateMapResize() {
-    stopResizeAnimation();
-    resizeAnimationStart = performance.now();
+  const bounds = L.latLngBounds([-5000, -6000], [5000, 6000]);
 
-    const tick = () => {
-      const elapsed = performance.now() - resizeAnimationStart;
-      const progress = Math.min(elapsed / resizeAnimationDuration, 1);
+  const map = L.map("totk-map", {
+    crs: L.CRS.Simple,
+    minZoom: -6,
+    maxZoom: 0,
+    zoomSnap: 0,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 110,
+    maxBoundsViscosity: 1,
+    attributionControl: false,
+    preferCanvas: true,
+    fadeAnimation: false,
+  });
 
-      syncMapToContainer();
+  map.createPane("overview").style.zIndex = 150;
 
-      if (progress < 1) {
-        resizeAnimationFrame = requestAnimationFrame(tick);
-      } else {
-        stopResizeAnimation();
-        syncMapToContainer();
-      }
+  const overlays = {};
+  function getOverlay(layer) {
+    if (!overlays[layer]) {
+      const overview = L.imageOverlay(`assets/images/maps/overview/${layer}.webp`, bounds, {
+        pane: "overview",
+        interactive: false,
+      });
+      const tiles = L.tileLayer(`assets/images/maps/tiles/${layer}/{z}/{x}_{y}.webp`, {
+        bounds,
+        tileSize: 256,
+        minNativeZoom: -5,
+        maxNativeZoom: -1,
+        minZoom: -8,
+        maxZoom: 0,
+        noWrap: true,
+        keepBuffer: 6,
+        updateWhenZooming: false,
+      });
+      tiles.once("tileerror", () => overview.setUrl(`assets/images/maps/webp/${layer}.webp`));
+      overlays[layer] = L.layerGroup([overview, tiles]);
+    }
+    return overlays[layer];
+  }
+
+  function preloadLayerOverviews() {
+    TG.DIFFICULTIES[state.difficulty].layers.forEach((layer) => {
+      new Image().src = `assets/images/maps/overview/${layer}.webp`;
+    });
+  }
+
+  const guessMarker = L.marker([0, 0], {
+    icon: L.divIcon({
+      className: "",
+      html: '<div class="guess-marker"><div class="pin"></div></div>',
+      iconSize: [26, 32],
+      iconAnchor: [13, 31],
+    }),
+    interactive: false,
+    keyboard: false,
+  });
+
+  const answerMarker = L.marker([0, 0], {
+    icon: L.divIcon({
+      className: "",
+      html: '<div class="answer-marker"></div>',
+      iconSize: [44, 44],
+      iconAnchor: [22, 22],
+    }),
+    keyboard: false,
+    zIndexOffset: 1000,
+  });
+
+  const lineLayer = L.layerGroup().addTo(map);
+
+  const MAP_W = 12000, MAP_H = 10000;
+  function zoomFor(size, cover = true) {
+    const fit = cover ? Math.max(size.w / MAP_W, size.h / MAP_H) : Math.min(size.w / MAP_W, size.h / MAP_H);
+    return Math.min(Math.log2(fit), map.getMaxZoom());
+  }
+
+  function mapSize() {
+    const { x, y } = map.getSize();
+    return { w: x, h: y };
+  }
+
+  function updateMinZoom() {
+    const guessing = state.phase !== "revealed";
+    map.setMinZoom(zoomFor(mapSize(), guessing));
+    map.setMaxBounds(guessing ? bounds : null);
+  }
+
+  function showWholeMap() {
+    updateMinZoom();
+    map.setView(bounds.getCenter(), map.getMinZoom(), { animate: false });
+  }
+
+  function setLayer(layer) {
+    if (!TG.DIFFICULTIES[state.difficulty].layers.includes(layer)) return;
+    Object.entries(overlays).forEach(([name, ov]) => name !== layer && map.removeLayer(ov));
+    getOverlay(layer).addTo(map);
+    state.layer = layer;
+    els.layerButtons.forEach((b) => {
+      const active = b.dataset.layer === layer;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-pressed", active);
+    });
+  }
+
+  function applyDifficulty() {
+    const allowed = TG.DIFFICULTIES[state.difficulty].layers;
+    els.layerButtons.forEach((b) => (b.hidden = !allowed.includes(b.dataset.layer)));
+    $("layer-switch").hidden = allowed.length < 2;
+    if (!allowed.includes(state.layer)) setLayer("surface");
+  }
+
+  let collapseTimer = null;
+
+  let autoFit = true;
+  ["wheel", "pointerdown", "touchstart"].forEach((type) =>
+    map.getContainer().addEventListener(type, () => (autoFit = false), { passive: true })
+  );
+
+  const FLIP_MS = 460;
+  const FLIP_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+  const FLIP_TRANSITION = `transform ${FLIP_MS}ms ${FLIP_EASE}, clip-path ${FLIP_MS}ms ${FLIP_EASE}`;
+  let flip = null;
+
+  function currentMode() {
+    const c = els.mapWrap.classList;
+    return c.contains("result") ? "result" : c.contains("expanded") ? "expanded" : "collapsed";
+  }
+
+  function applyMode(mode) {
+    els.mapWrap.classList.toggle("expanded", mode === "expanded");
+    els.mapWrap.classList.toggle("result", mode === "result");
+  }
+
+  function frameRect() {
+    const w = els.mapWrap;
+    return { x: w.offsetLeft, y: w.offsetTop, w: w.offsetWidth, h: w.offsetHeight };
+  }
+
+  function measureFrame(mode) {
+    const before = els.mapWrap.className;
+    applyMode(mode);
+    const rect = frameRect();
+    els.mapWrap.className = before;
+    return rect;
+  }
+
+  function flipStyle(small, large, radius) {
+    const s = Math.max(small.w / large.w, small.h / large.h);
+    const dx = small.x + small.w / 2 - (large.x + large.w - (s * large.w) / 2);
+    const dy = small.y + small.h / 2 - (large.y + large.h - (s * large.h) / 2);
+    const ix = Math.max(0, (large.w - small.w / s) / 2);
+    const iy = Math.max(0, (large.h - small.h / s) / 2);
+    return {
+      scale: s,
+      transform: `translate(${dx}px, ${dy}px) scale(${s})`,
+      clip: `inset(${iy}px ${ix}px ${iy}px ${ix}px round ${radius / s}px)`,
     };
-
-    resizeAnimationFrame = requestAnimationFrame(tick);
   }
 
-  totkMap.style.transition = "width 0.3s ease-in-out, height 0.3s ease-in-out";
-  totkMap.style.width = size.defaultWidth;
-  totkMap.style.height = size.defaultHeight;
+  function frameStyle(transform, clip, transition) {
+    const st = els.mapWrap.style;
+    st.transition = transition;
+    st.transform = transform;
+    st.clipPath = clip;
+  }
 
-  totkMap.addEventListener("mouseenter", () => {
-    if (hoverableMap !== false) {
-      const size = getMapSize();
-      stopResizeAnimation();
-      totkMap.style.height = size.hoverHeight;
-      totkMap.style.width = size.hoverWidth;
-      totkMap.style.marginTop = "50px";
-      animateMapResize();
+  function setMapMode(mode, done) {
+    clearTimeout(collapseTimer);
+    if (flip) flip.finish();
+    if (currentMode() === mode) {
+      if (done) done();
+      return;
     }
+
+    const wrap = els.mapWrap;
+    const from = frameRect();
+    const to = measureFrame(mode);
+    const grows = to.w * to.h >= from.w * from.h;
+    const small = grows ? from : to;
+    const large = grows ? to : from;
+    const radius = parseFloat(getComputedStyle(wrap).borderTopLeftRadius) || 0;
+    const f = flipStyle(small, large, radius);
+    const dz = Math.log2(f.scale);
+    const fit = autoFit && state.phase === "guessing";
+    const center = fit ? bounds.getCenter() : map.getCenter();
+    const smallZoom = grows
+      ? (fit ? zoomFor(small) : map.getZoom())
+      : (fit ? zoomFor(small) : map.getZoom() + dz);
+
+    wrap.classList.add("animating");
+    map.setMaxBounds(null);
+    map.setMinZoom(-8);
+    if (grows) applyMode(mode);
+    map.invalidateSize({ animate: false, pan: false });
+    map.setView(center, smallZoom - dz, { animate: false });
+
+    const identity = `inset(0px 0px 0px 0px round ${radius}px)`;
+    if (grows) {
+      frameStyle(f.transform, f.clip, "none");
+      void wrap.offsetWidth;
+      frameStyle("translate(0px, 0px) scale(1)", identity, FLIP_TRANSITION);
+    } else {
+      frameStyle("translate(0px, 0px) scale(1)", identity, "none");
+      void wrap.offsetWidth;
+      frameStyle(f.transform, f.clip, FLIP_TRANSITION);
+    }
+
+    const finish = () => {
+      clearTimeout(timer);
+      flip = null;
+      if (!grows) {
+        applyMode(mode);
+        map.invalidateSize({ animate: false, pan: false });
+      }
+      frameStyle("", "", "none");
+      void wrap.offsetWidth;
+      frameStyle("", "", "");
+      wrap.classList.remove("animating");
+      updateMinZoom();
+      if (!grows) map.setView(center, Math.max(smallZoom, map.getMinZoom()), { animate: false });
+      else if (map.getZoom() < map.getMinZoom()) map.setZoom(map.getMinZoom(), { animate: false });
+      if (done) done();
+    };
+    const timer = setTimeout(finish, FLIP_MS + 20);
+    flip = { finish };
+  }
+
+  function collapseMap() {
+    if (state.pinned || state.phase !== "guessing") return;
+    setMapMode("collapsed");
+  }
+
+  function setPinned(pinned) {
+    state.pinned = pinned;
+    els.mapPin.setAttribute("aria-pressed", pinned);
+    if (pinned) setMapMode("expanded");
+    else if (!els.mapWrap.matches(":hover")) collapseMap();
+  }
+
+  els.mapWrap.addEventListener("mouseenter", () => {
+    clearTimeout(collapseTimer);
+    if (canHover.matches && state.phase === "guessing") setMapMode("expanded");
   });
 
-  totkMap.addEventListener("mouseleave", () => {
-    if (hoverableMap !== false) {
-      const size = getMapSize();
-      stopResizeAnimation();
-      totkMap.style.width = size.defaultWidth;
-      totkMap.style.height = size.defaultHeight;
-      animateMapResize();
-    }
+  els.mapWrap.addEventListener("mouseleave", () => {
+    if (!canHover.matches) return;
+    clearTimeout(collapseTimer);
+    collapseTimer = setTimeout(collapseMap, 350);
   });
 
-  document.body.style.backgroundImage = "url(assets/images/totkBackground.png)";
-  document.getElementById(
-    "imageTurn"
-  ).innerHTML = `IMG: <x style="color: red;">1</x>/${maxImages}`;
+  els.mapCatcher.addEventListener("click", () => {
+    if (state.phase === "guessing") setMapMode("expanded");
+  });
 
-  (function () {
-    const container = document.getElementById("image-container");
-    const img = document.getElementById("location-image");
-    const totkMap = document.querySelector(".totkMapC") || document.getElementById("totk-map");
+  els.mapClose.addEventListener("click", () => {
+    state.pinned = false;
+    els.mapPin.setAttribute("aria-pressed", false);
+    setMapMode("collapsed");
+  });
 
-    if (totkMap) {
-      totkMap.style.transition = "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease-in-out, height 0.3s ease-in-out";
+  els.mapPin.addEventListener("click", () => setPinned(!state.pinned));
+
+  const dock = $("dock");
+  dock.addEventListener("mouseenter", () => clearTimeout(collapseTimer));
+  dock.addEventListener("mouseleave", (e) => {
+    if (!canHover.matches || els.mapWrap.contains(e.relatedTarget)) return;
+    clearTimeout(collapseTimer);
+    collapseTimer = setTimeout(collapseMap, 350);
+  });
+
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty("--dock-h", `${dock.offsetHeight}px`);
+  }).observe(dock);
+
+  window.addEventListener("resize", () => {
+    map.invalidateSize({ animate: false });
+    updateMinZoom();
+  });
+
+  map.on("click", (e) => {
+    if (state.phase !== "guessing") return;
+    const latlng = bounds.contains(e.latlng) ? e.latlng : bounds.getCenter();
+    state.guess = { x: Math.round(latlng.lng), y: Math.round(latlng.lat) };
+    guessMarker.remove();
+    guessMarker.setLatLng(latlng).addTo(map);
+    setSubmit("Submit Guess", true);
+  });
+
+  els.layerButtons.forEach((button) =>
+    button.addEventListener("click", (e) => {
+      setLayer(button.dataset.layer);
+      if (e.detail > 0) button.blur();
+    })
+  );
+
+  function setSubmit(label, enabled, ready = enabled) {
+    els.submit.textContent = label;
+    els.submit.disabled = !enabled;
+    els.submit.classList.toggle("ready", ready);
+  }
+
+  function setMessage(html, tone = "") {
+    els.message.innerHTML = html;
+    els.message.classList.toggle("good", tone === "good");
+    els.message.classList.toggle("bad", tone === "bad");
+    bump(els.message);
+  }
+
+  function bump(el) {
+    el.classList.remove("bump");
+    void el.offsetWidth;
+    el.classList.add("bump");
+  }
+
+  let scoreAnim = null;
+  function animateScore(to) {
+    cancelAnimationFrame(scoreAnim);
+    const from = state.displayedScore;
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min((now - start) / 800, 1);
+      const value = from + (to - from) * (1 - Math.pow(1 - t, 3));
+      els.score.textContent = fmt(value);
+      if (t < 1) scoreAnim = requestAnimationFrame(step);
+    };
+    state.displayedScore = to;
+    scoreAnim = requestAnimationFrame(step);
+    bump(els.score.parentElement);
+  }
+
+  let toastTimer = null;
+  function toast(text) {
+    let el = document.querySelector(".toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "toast";
+      el.setAttribute("role", "status");
+      document.body.appendChild(el);
     }
+    el.textContent = text;
+    requestAnimationFrame(() => el.classList.add("show"));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+  }
 
-    let currentScale = 1;
-    let targetScale = 1;
-    let currentX = 0;
-    let currentY = 0;
-    let targetX = 0;
-    let targetY = 0;
+  const LAYER_ICONS = {
+    sky: '<path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/>',
+    surface: '<path d="M3 19l6-10 4 6 2-3 6 7z"/>',
+    depths: '<path d="M4 5h16M7 9h10M10 13h4M12 16v4M9 18l3 3 3-3"/>',
+    unknown: '<circle cx="12" cy="12" r="8"/><path d="M10 10a2 2 0 1 1 2.5 1.9c-.4.2-.5.5-.5.9v.7M12 16.5v.01"/>',
+  };
+  const icon = (name) => `<svg class="h-icon" viewBox="0 0 24 24" aria-hidden="true">${LAYER_ICONS[name]}</svg>`;
 
-    const minScale = 1;
-    const maxScale = 5;
-    const zoomFactor = 0.2;
-    const lerpFactor = 0.2;
+  function renderHud() {
+    els.round.innerHTML = `<b>${Math.min(state.index + 1, state.rounds.length)}</b>/${state.rounds.length}`;
+    els.progress.innerHTML = state.rounds
+      .map((_, i) => {
+        const r = state.results[i];
+        if (r) return `<span class="seg done" style="--c:${pointsColor(r.points)}"></span>`;
+        return `<span class="seg${i === state.index ? " current" : ""}"></span>`;
+      })
+      .join("");
+    renderHistory();
+  }
 
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let isAnimating = false;
+  function renderHistory() {
+    const list = $("history");
+    if (!list) return;
+    list.innerHTML = state.rounds
+      .map((loc, i) => {
+        const r = state.results[i];
+        const n = `<span class="h-n">#${i + 1}</span>`;
+        if (r) {
+          const layer = TG.LAYERS[r.layer];
+          const detail = r.guessLayer !== r.layer ? "wrong layer" : `${fmt(r.distance)} m`;
+          const fresh = i === state.results.length - 1 && state.phase === "revealed";
+          return `<li class="done${fresh ? "" : " old"}" style="--c:${pointsColor(r.points)};--lc:${layer.color}">
+            ${n}${icon(r.layer)}<span class="h-text">${layer.label} · ${detail}</span><span class="h-pts">${fmt(r.points)}</span></li>`;
+        }
+        if (i === state.index && state.phase !== "finished") {
+          return `<li class="current">${n}${icon("unknown")}<span class="h-text">Guessing…</span><span class="h-pts"></span></li>`;
+        }
+        return `<li>${n}${icon("unknown")}<span class="h-text">Image ${i + 1}</span><span class="h-pts">–</span></li>`;
+      })
+      .join("");
+    const active = list.querySelector(".current") || list.lastElementChild;
+    if (active) active.scrollIntoView({ block: "nearest" });
+  }
 
-    function clamp(val, min, max) {
-      return Math.min(Math.max(val, min), max);
-    }
+  const zoom = (() => {
+    const wrap = els.imageWrap;
+    const img = els.image;
+    const MIN = 1;
+    const MAX = 5;
+    let scale = 1, x = 0, y = 0;
+    let tScale = 1, tx = 0, ty = 0;
+    let frame = null;
+    const pointers = new Map();
+    let pinch = null;
+    let drag = null;
+    let lastTap = 0;
+    let lastPointerType = "mouse";
 
-    function updateBounds() {
-      const rect = container.getBoundingClientRect();
-      const maxTransX = (rect.width * (targetScale - 1)) / 2;
-      const maxTransY = (rect.height * (targetScale - 1)) / 2;
+    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 
-      targetX = clamp(targetX, -maxTransX, maxTransX);
-      targetY = clamp(targetY, -maxTransY, maxTransY);
+    function clampTarget() {
+      const rect = wrap.getBoundingClientRect();
+      const maxX = (rect.width * (tScale - 1)) / 2;
+      const maxY = (rect.height * (tScale - 1)) / 2;
+      tx = clamp(tx, -maxX, maxX);
+      ty = clamp(ty, -maxY, maxY);
     }
 
     function render() {
-      currentScale += (targetScale - currentScale) * lerpFactor;
-      currentX += (targetX - currentX) * lerpFactor;
-      currentY += (targetY - currentY) * lerpFactor;
-
-      img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0px) scale(${currentScale})`;
-
-      if (
-        Math.abs(targetScale - currentScale) > 0.001 ||
-        Math.abs(targetX - currentX) > 0.01 ||
-        Math.abs(targetY - currentY) > 0.01 ||
-        isDragging
-      ) {
-        requestAnimationFrame(render);
+      const k = drag || pinch ? 0.45 : 0.22;
+      scale += (tScale - scale) * k;
+      x += (tx - x) * k;
+      y += (ty - y) * k;
+      img.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+      if (Math.abs(tScale - scale) > 0.001 || Math.abs(tx - x) > 0.1 || Math.abs(ty - y) > 0.1) {
+        frame = requestAnimationFrame(render);
       } else {
-        isAnimating = false;
+        frame = null;
       }
     }
 
-    function startAnimationLoop() {
-      if (!isAnimating) {
-        isAnimating = true;
-        requestAnimationFrame(render);
+    function animate() {
+      wrap.classList.toggle("zoomed", tScale > 1.01);
+      if (!frame) frame = requestAnimationFrame(render);
+    }
+
+    function zoomAt(clientX, clientY, newScale) {
+      newScale = clamp(newScale, MIN, MAX);
+      if (newScale === tScale) return;
+      const rect = wrap.getBoundingClientRect();
+      const mx = clientX - rect.left - rect.width / 2;
+      const my = clientY - rect.top - rect.height / 2;
+      const factor = newScale / tScale - 1;
+      tx -= (mx - tx) * factor;
+      ty -= (my - ty) * factor;
+      tScale = newScale;
+      clampTarget();
+      animate();
+      hideZoomHint();
+    }
+
+    function toggleZoom(clientX, clientY) {
+      if (tScale > 1.05) {
+        tScale = 1;
+        tx = ty = 0;
+        animate();
+      } else {
+        zoomAt(clientX, clientY, 2.5);
       }
     }
 
-    function slideOutMap() {
-      if (totkMap) {
-        totkMap.style.opacity = "0";
-        totkMap.style.transform = "translateX(120%)";
-        totkMap.style.pointerEvents = "none";
-      }
+    function reset() {
+      scale = tScale = 1;
+      x = y = tx = ty = 0;
+      pointers.clear();
+      pinch = drag = null;
+      img.style.transform = "";
+      wrap.classList.remove("zoomed", "dragging");
+      peekMap(false);
     }
 
-    function slideInMap() {
-      if (totkMap) {
-        totkMap.style.opacity = "1";
-        totkMap.style.transform = "translateX(0)";
-        totkMap.style.pointerEvents = "auto";
-      }
+    function peekMap(away) {
+      const mapBusy = els.mapWrap.classList.contains("expanded") || els.mapWrap.classList.contains("result");
+      els.mapWrap.classList.toggle("peek-away", away && !mapBusy);
     }
 
-    container.addEventListener("wheel", (e) => {
-      e.preventDefault();
+    const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
-      const rect = container.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left - rect.width / 2;
-      const mouseY = e.clientY - rect.top - rect.height / 2;
-
-      const delta = e.deltaY < 0 ? 1 + zoomFactor : 1 - zoomFactor;
-      const newScale = clamp(targetScale * delta, minScale, maxScale);
-
-      if (newScale !== targetScale) {
-        const factor = newScale / targetScale - 1;
-        targetX -= (mouseX - targetX) * factor;
-        targetY -= (mouseY - targetY) * factor;
-        targetScale = newScale;
-
-        updateBounds();
-        startAnimationLoop();
-      }
-    }, { passive: false });
-
-    container.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
-
-      if (targetScale > 1) {
+    wrap.addEventListener(
+      "wheel",
+      (e) => {
         e.preventDefault();
-        slideOutMap();
+        const unit = e.deltaMode === 1 ? 0.05 : 0.0018;
+        zoomAt(e.clientX, e.clientY, tScale * Math.exp(-e.deltaY * unit));
+      },
+      { passive: false }
+    );
 
-        isDragging = true;
-        startX = e.clientX - targetX;
-        startY = e.clientY - targetY;
-        container.style.cursor = "grabbing";
+    wrap.addEventListener("dblclick", (e) => {
+      if (lastPointerType === "touch") return;
+      toggleZoom(e.clientX, e.clientY);
+    });
+
+    wrap.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      lastPointerType = e.pointerType;
+      wrap.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY });
+
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinch = { dist: distance(a, b), scale: tScale };
+        drag = null;
+      } else if (pointers.size === 1 && tScale > 1.01) {
+        drag = { x: e.clientX - tx, y: e.clientY - ty };
+        wrap.classList.add("dragging");
+        peekMap(true);
       }
     });
 
-    window.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
+    wrap.addEventListener("pointermove", (e) => {
+      const p = pointers.get(e.pointerId);
+      if (!p) return;
+      p.x = e.clientX;
+      p.y = e.clientY;
 
-      targetX = e.clientX - startX;
-      targetY = e.clientY - startY;
-
-      updateBounds();
-      startAnimationLoop();
+      if (pinch && pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        const mid = midpoint(a, b);
+        zoomAt(mid.x, mid.y, pinch.scale * (distance(a, b) / pinch.dist));
+      } else if (drag) {
+        tx = e.clientX - drag.x;
+        ty = e.clientY - drag.y;
+        clampTarget();
+        animate();
+      }
     });
 
-    window.addEventListener("mouseup", (e) => {
-      if (e.button === 0) {
-        slideInMap();
-        if (isDragging) {
-          isDragging = false;
-          container.style.cursor = "grab";
+    function endPointer(e) {
+      const p = pointers.get(e.pointerId);
+      if (!p) return;
+      pointers.delete(e.pointerId);
+
+      if (e.type === "pointerup" && e.pointerType === "touch" && !pinch &&
+          Math.hypot(e.clientX - p.startX, e.clientY - p.startY) < 10) {
+        const now = performance.now();
+        if (now - lastTap < 300) {
+          toggleZoom(e.clientX, e.clientY);
+          lastTap = 0;
+        } else {
+          lastTap = now;
         }
       }
-    });
 
-    window.resetImageZoom = function () {
-      targetScale = 1;
-      targetX = 0;
-      targetY = 0;
-      currentScale = 1;
-      currentX = 0;
-      currentY = 0;
-      isDragging = false;
-      container.style.cursor = "default";
-      img.style.transform = `translate3d(0px, 0px, 0px) scale(1)`;
-      slideInMap();
-    };
+      if (pointers.size < 2) pinch = null;
+      if (pointers.size === 1 && tScale > 1.01) {
+        const [rest] = pointers.values();
+        drag = { x: rest.x - tx, y: rest.y - ty };
+      } else if (pointers.size === 0) {
+        drag = null;
+        wrap.classList.remove("dragging");
+        peekMap(false);
+      }
+    }
+
+    wrap.addEventListener("pointerup", endPointer);
+    wrap.addEventListener("pointercancel", endPointer);
+
+    return { reset };
   })();
 
-  const mapConfig = {
-    preferCanvas: true,
-    minZoom: -3,
-    maxZoom: 0,
-    center: [1800, -3450],
-    zoom: -3,
-    cursor: true,
-    crs: L.CRS.Simple,
-    attributionControl: false
-  };
-
-  const map = L.map("totk-map", mapConfig);
-
-  const bounds = new L.LatLngBounds(
-    map.unproject([-6000, 5000], 0),
-    map.unproject([6000, -5000], 0)
-  );
-  map.setMaxBounds(bounds);
-
-  const cursorIcon = L.icon({
-    iconUrl: "assets/images/icons/selectionmarker.png",
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-  });
-
-  const cursorMarker = L.marker([0, 0], {
-    icon: cursorIcon,
-    autoPan: false,
-  });
-  const finishMarker = L.marker();
-  const lineLayer = L.layerGroup();
-
-  const layers = {
-    sky: L.imageOverlay("assets/images/maps/sky.jpg", bounds),
-    surface: L.imageOverlay("assets/images/maps/surface.jpg", bounds),
-    depths: L.imageOverlay("assets/images/maps/depths.jpg", bounds),
-  };
-
-  const zoomLayers = {
-    zoom1: L.layerGroup(),
-    zoom2: L.layerGroup(),
-  };
-
-  function initializeMap() {
-    map.on("click", handleMapClick);
-    map.on("zoom", updateLocations);
-
-    jQuery("#show-layer-sky").click(() => activateLayer("sky"));
-    jQuery("#show-layer-surface").click(() => activateLayer("surface"));
-    jQuery("#show-layer-depths").click(() => activateLayer("depths"));
-
-    applyDifficultyLayerVisibility();
-    activateLayer("surface");
-    jQuery("#show-layer-surface").trigger("click");
+  let hintTimer = null;
+  function showZoomHint() {
+    if (TG.store.get("seenZoomHint")) return;
+    els.zoomHint.textContent = canHover.matches
+      ? "Scroll to zoom · drag to pan · double-click to zoom in"
+      : "Pinch or double-tap to zoom";
+    els.zoomHint.classList.add("show");
+    hintTimer = setTimeout(hideZoomHint, 5000);
   }
 
-  function handleMapClick(e) {
-    x = Math.round(e.latlng.lng);
-    y = Math.round(e.latlng.lat);
-
-    cursorMarker
-      .setLatLng([e.latlng.lat + 0, e.latlng.lng + 4])
-      .bindPopup(generateMarkerPopup("Marker Position", x, y))
-      .openPopup()
-      .addTo(map);
-
-    markerSet = true;
-    document.getElementById("submit-marker").disabled = false;
+  function hideZoomHint() {
+    if (!els.zoomHint.classList.contains("show")) return;
+    clearTimeout(hintTimer);
+    els.zoomHint.classList.remove("show");
+    TG.store.set("seenZoomHint", "1");
   }
 
-  function updateLocations() {
-    if (currentLayer !== "surface") {
-      map.removeLayer(zoomLayers.zoom1);
-      map.removeLayer(zoomLayers.zoom2);
-      return;
-    }
-
-    const zoomLevel = map.getZoom();
-    if (zoomLevel <= -3) {
-      map.addLayer(zoomLayers.zoom1);
-      map.removeLayer(zoomLayers.zoom2);
-    } else {
-      map.removeLayer(zoomLayers.zoom1);
-      map.addLayer(zoomLayers.zoom2);
-    }
+  function loadImage(loc) {
+    return new Promise((resolve) => {
+      els.stage.classList.add("loading");
+      const img = els.image;
+      let triedFallback = false;
+      img.onload = () => {
+        els.stage.classList.remove("loading");
+        const backdrop = $("backdrop-image");
+        backdrop.classList.remove("show");
+        backdrop.onload = () => backdrop.classList.add("show");
+        backdrop.src = img.currentSrc || img.src;
+        resolve();
+      };
+      img.onerror = () => {
+        if (!triedFallback) {
+          triedFallback = true;
+          img.src = TG.imageFallbackUrl(loc);
+        } else {
+          els.stage.classList.remove("loading");
+          setMessage('<span class="warn">This image could not be loaded.</span>');
+          resolve();
+        }
+      };
+      img.src = TG.imageUrl(loc);
+    });
   }
 
-  function activateLayer(layer) {
-    Object.values(layers).forEach((l) => map.removeLayer(l));
-    layers[layer].addTo(map);
-    currentLayer = layer;
-    updateLocations();
+  function preload(loc) {
+    if (!loc) return;
+    const img = new Image();
+    img.onerror = () => (img.src = TG.imageFallbackUrl(loc));
+    img.src = TG.imageUrl(loc);
   }
 
-  function generateMarkerPopup(title, x, y) {
-    return `
-            <div class='totk-marker'>
-                <h2>${title}</h2>
-                <div class='content'>
-                    <div class='totk-marker-meta'>
-                        <span><strong>X:</strong> ${x}</span>
-                        <span><strong>Y:</strong> ${y}</span>
-                    </div>
-                </div>
-            </div>`;
+  function startRound() {
+    state.phase = "guessing";
+    state.guess = null;
+    guessMarker.remove();
+    answerMarker.remove();
+    lineLayer.clearLayers();
+    zoom.reset();
+
+    autoFit = true;
+    setLayer("surface");
+    setMapMode(state.pinned ? "expanded" : "collapsed", showWholeMap);
+
+    renderHud();
+    const multi = TG.DIFFICULTIES[state.difficulty].layers.length > 1;
+    setMessage(
+      `<span class="title">Where could this be?</span>` +
+        `<span>${multi ? "Choose the right layer and drop a pin." : "Drop a pin on the map."}</span>`
+    );
+    setSubmit("Submit Guess", false);
+
+    const loc = currentRound();
+    loadImage(loc).then(() => preload(state.rounds[state.index + 1]));
   }
 
-  function applyDifficultyLayerVisibility() {
-    const validDifficulties = ["easy", "medium", "hard"];
-    if (!validDifficulties.includes(difficulty)) {
-      difficulty = "hard";
-      localStorage.setItem("difficulty", "hard");
-    }
+  function reveal() {
+    if (state.phase !== "guessing" || !state.guess) return;
+    const loc = currentRound();
+    const g = state.guess;
+    const distance = Math.hypot(g.x - loc.x, g.y - loc.y);
+    const correctLayer = state.layer === loc.layer;
+    const points = correctLayer ? calculateScore(distance) : 0;
 
-    const allowedLayers = {
-      easy: ["surface"],
-      medium: ["surface", "sky"],
-      hard: ["surface", "sky", "depths"],
-    }[difficulty];
+    state.results.push({ key: loc.key, layer: loc.layer, guessLayer: state.layer, distance, points });
+    state.phase = "revealed";
+    saveProgress();
 
-    const layerButtons = {
-      sky: document.getElementById("show-layer-sky"),
-      surface: document.getElementById("show-layer-surface"),
-      depths: document.getElementById("show-layer-depths"),
-    };
+    if (!correctLayer) setLayer(loc.layer);
 
-    Object.keys(layerButtons).forEach((layer) => {
-      const button = layerButtons[layer];
-      if (!button) return;
+    const answer = L.latLng(loc.y, loc.x);
+    const guess = L.latLng(g.y, g.x);
+    lineLayer.clearLayers();
+    L.polyline([guess, answer], {
+      color: correctLayer ? "#ffffff" : "#ff453a",
+      weight: 3,
+      opacity: 0.95,
+      dashArray: "0.1 8",
+      lineCap: "round",
+      interactive: false,
+    }).addTo(lineLayer);
+    answerMarker
+      .setLatLng(answer)
+      .addTo(map)
+      .unbindTooltip()
+      .bindTooltip(`${TG.LAYERS[loc.layer].label} · X ${loc.x} · Y ${loc.y}`, {
+        className: "result-tip",
+        direction: "top",
+        offset: [0, -24],
+      });
 
-      const isAllowed = allowedLayers.includes(layer);
-      button.style.display = isAllowed ? "inline-block" : "none";
-      button.disabled = !isAllowed;
+    setMapMode("result", () => {
+      const padX = Math.min(130, map.getSize().x * 0.3);
+      map.fitBounds(L.latLngBounds([guess, answer]), {
+        paddingTopLeft: [padX, 90],
+        paddingBottomRight: [padX, 50],
+        maxZoom: -1,
+        animate: true,
+      });
+      answerMarker.openTooltip();
     });
 
-    if (currentLayer && !allowedLayers.includes(currentLayer)) {
-      activateLayer(allowedLayers[0]);
-    }
-  }
+    animateScore(totalScore());
+    renderHud();
 
-  function getFilteredPool(data) {
-    const validDifficulties = ["easy", "medium", "hard"];
-    if (!validDifficulties.includes(difficulty)) {
-      difficulty = "hard";
-      localStorage.setItem("difficulty", "hard");
-    }
+    const flavour =
+      points === MAX_POINTS ? "Perfect! 🎯" :
+      points >= 4000 ? "Great guess!" :
+      points >= 2000 ? "Not bad!" :
+      points > 0 ? "Way off…" : "";
 
-    const allKeys = Object.keys(data);
-    
-    const pools = {
-      surface: allKeys.filter(k => data[k] && data[k].split("_")[0] === "surface"),
-      sky: allKeys.filter(k => data[k] && data[k].split("_")[0] === "sky"),
-      depths: allKeys.filter(k => data[k] && data[k].split("_")[0] === "depths"),
-    };
-
-    if (difficulty === "easy") {
-      return pools.surface;
-    } else if (difficulty === "medium") {
-      const targetSky = Math.round(maxImages / 2);
-      const targetSurface = maxImages - targetSky;
-      return [
-        ...shuffle(pools.surface).slice(0, targetSurface),
-        ...shuffle(pools.sky).slice(0, targetSky)
-      ];
+    if (correctLayer) {
+      setMessage(
+        `<span class="points">+${fmt(points)}</span>` +
+          `<span><strong>${fmt(distance)} m</strong> away${flavour ? " · " + flavour : ""}</span>`,
+        points >= 2000 ? "good" : "bad"
+      );
     } else {
-      const baseCount = Math.floor(maxImages / 3);
-      const remainder = maxImages % 3;
-      
-      let targetSurface = baseCount;
-      let targetSky = baseCount;
-      let targetDepths = baseCount;
-
-      if (remainder === 1) {
-        targetSurface += 1;
-      } else if (remainder === 2) {
-        targetSurface += 1;
-        targetSky += 1;
-      }
-
-      return shuffle([
-        ...shuffle(pools.surface).slice(0, targetSurface),
-        ...shuffle(pools.sky).slice(0, targetSky),
-        ...shuffle(pools.depths).slice(0, targetDepths)
-      ]);
-    }
-  }
-
-  function shuffle(items) {
-    const copy = [...items];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
-
-  function getRandomHistoryKey() {
-    return "randomHistory";
-  }
-
-  function pickNextImageKey(data) {
-    const pool = getFilteredPool(data);
-    if (pool.length === 0) {
-      throw new Error(
-        "Keine passenden Bilder für die aktuelle Schwierigkeit gefunden."
+      setMessage(
+        `<span class="points zero">+0</span>` +
+          `<span><span class="warn">Wrong layer!</span> This was in the <strong>${TG.LAYERS[loc.layer].label}</strong>.</span>`,
+        "bad"
       );
     }
 
-    const historyKey = getRandomHistoryKey();
-    const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
-    const counts = {};
-
-    pool.forEach((key) => {
-      counts[key] = 0;
-    });
-
-    history.forEach((key) => {
-      if (Object.prototype.hasOwnProperty.call(counts, key)) {
-        counts[key] += 1;
-      }
-    });
-
-    const minCount = Math.min(...Object.values(counts));
-    const eligibleKeys = pool.filter((key) => (counts[key] || 0) === minCount);
-    const imageKey = eligibleKeys[Math.floor(Math.random() * eligibleKeys.length)];
-
-    history.push(imageKey);
-    localStorage.setItem(historyKey, JSON.stringify(history));
-
-    return imageKey;
+    const last = state.index >= state.rounds.length - 1;
+    setSubmit(last ? "See Results" : "Next Image", true, false);
+    els.submit.focus({ preventScroll: true });
   }
 
-  async function loadLocationData() {
-    try {
-      const response = await fetch(`assets/images/locations/locations.json`);
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
-
-      const imageKey = pickNextImageKey(data);
-      imageUsageCount[imageKey] = (imageUsageCount[imageKey] || 0) + 1;
-
-      const imageNumber = parseInt(imageKey.replace("img", ""), 10);
-      const seed = calculateSeed(imageNumber);
-
-      const [layer, x, y] = data[imageKey].split("_");
-      layerImage = layer;
-      xImage = parseInt(x, 10);
-      yImage = parseInt(y, 10);
-
-      document.getElementById(
-        "location-image"
-      ).src = `assets/images/locations/${imageKey}.png`;
-
-      updateURLWithSeed(seed);
-    } catch (error) {
-      console.error("Fehler beim Laden der Daten:", error);
+  function nextRound() {
+    if (state.phase !== "revealed") return;
+    if (state.index >= state.rounds.length - 1) {
+      finish();
+      return;
     }
+    state.index++;
+    startRound();
   }
 
-  function calculateSeed(imageNumber) {
-    let seed = imageNumber * 137;
-    seed = (seed * 19 + 123456) % 1000000;
-    seedForPlayingAgain = seed;
-
-    return seed;
+  function onPrimary() {
+    if (state.phase === "guessing") reveal();
+    else if (state.phase === "revealed") nextRound();
   }
 
-  function updateURLWithSeed(seed) {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set("seed", seed);
-    window.history.pushState({}, "", currentUrl);
+  els.submit.addEventListener("click", onPrimary);
+  els.restart.addEventListener("click", () => {
+    clearProgress();
+    window.location.href = "guess.html";
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    const onControl = tag === "button" || tag === "a";
+
+    if ((e.key === " " || e.key === "Enter") && !onControl && state.phase !== "finished") {
+      e.preventDefault();
+      if (!els.submit.disabled) onPrimary();
+      return;
+    }
+
+    const layerKeys = { 1: "sky", 2: "surface", 3: "depths" };
+    if (layerKeys[e.key]) {
+      const btn = els.layerButtons.find((b) => b.dataset.layer === layerKeys[e.key]);
+      if (btn && !btn.hidden) setLayer(layerKeys[e.key]);
+    } else if (e.key === "m" || e.key === "M") {
+      if (state.phase === "guessing") setPinned(!state.pinned);
+    } else if (e.key === "Escape") {
+      if (state.phase === "guessing" && !state.pinned) setMapMode("collapsed");
+    }
+  });
+
+  const progressKey = () => `tg-progress:${state.seedString}`;
+
+  function saveProgress() {
+    try {
+      sessionStorage.setItem(progressKey(), JSON.stringify({ results: state.results }));
+    } catch {}
   }
 
-  function getSeedQueueFromUrl() {
-    const raw = window.location.search.replace(/^\?/, "").split("&").filter(Boolean);
-    const queue = [];
+  function clearProgress() {
+    try {
+      sessionStorage.removeItem(progressKey());
+    } catch {}
+  }
 
-    raw.forEach((part) => {
-      if (!part) return;
-
-      const separatorIndex = part.indexOf("=");
-      if (separatorIndex !== -1) {
-        const key = part.slice(0, separatorIndex);
-        const value = part.slice(separatorIndex + 1).trim();
-        if (key === "seed" && value && /^\d+$/.test(value)) {
-          queue.push(value);
-        }
+  function restoreProgress() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(progressKey()) || "null");
+      if (!saved || !Array.isArray(saved.results)) return;
+      if (saved.results.length >= state.rounds.length) {
+        clearProgress();
         return;
       }
+      state.results = saved.results;
+      state.index = saved.results.length;
+      if (state.index > 0) toast(`Welcome back – continuing at image ${state.index + 1}.`);
+    } catch {}
+  }
 
-      if (/^\d+$/.test(part.trim())) {
-        queue.push(part.trim());
-      }
+  function shareUrl() {
+    const url = new URL(window.location.href);
+    url.search = `?seed=${state.seedString}`;
+    url.hash = "";
+    return url.toString();
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch {}
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function finish() {
+    state.phase = "finished";
+    clearProgress();
+    setSubmit("Game Over", false, false);
+
+    const score = totalScore();
+    const max = state.rounds.length * MAX_POINTS;
+    const pct = (score / max) * 100;
+    const diff = TG.DIFFICULTIES[state.difficulty];
+
+    const rank =
+      pct >= 90 ? { title: "Hero of Hyrule", color: "#30d158" } :
+      pct >= 70 ? { title: "Master Navigator", color: "#64d2ff" } :
+      pct >= 40 ? { title: "Adventurer", color: "#ffd60a" } :
+                  { title: "Lost Korok", color: "#ff9f0a" };
+
+    const best = TG.store.get(`best:${state.difficulty}:${state.rounds.length}`);
+    const isRecord = !best || score > Number(best);
+    if (isRecord) TG.store.set(`best:${state.difficulty}:${state.rounds.length}`, score);
+
+    const rows = state.results
+      .map((r, i) => {
+        const layer = TG.LAYERS[r.layer];
+        const wrong = r.guessLayer !== r.layer;
+        return `<li style="--c:${pointsColor(r.points)};animation-delay:${1.2 + i * 0.08}s">
+          <span class="n">#${i + 1}</span>
+          <span class="layer" style="color:${layer.color}">${layer.label}</span>
+          <span class="dist">${wrong ? "wrong layer" : fmt(r.distance) + " m"}</span>
+          <span class="pts" style="color:${pointsColor(r.points)}">${fmt(r.points)}</span>
+        </li>`;
+      })
+      .join("");
+
+    const overlay = document.createElement("div");
+    overlay.className = "end-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-label", "Results");
+    overlay.innerHTML = `
+      <div class="end-box" style="--rank:${rank.color}">
+        <div class="end-diff">${diff.label} · ${state.rounds.length} images</div>
+        <div class="end-rank">${rank.title}</div>
+        <div class="end-sub">Your score</div>
+        <div class="end-score" id="end-score">0</div>
+        <div class="end-max">of ${fmt(max)} points · ${
+          isRecord ? "New personal best" : `Best: ${fmt(Number(best))}`
+        }</div>
+        <ul class="end-rounds">${rows}</ul>
+        <div class="end-actions" id="end-actions">
+          <button type="button" class="main" id="end-again">Play Again</button>
+          <button type="button" id="end-copy">Copy Link</button>
+          <a href="index.html">Home</a>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector("#end-again").addEventListener("click", () => {
+      window.location.href = "guess.html";
+    });
+    const copyBtn = overlay.querySelector("#end-copy");
+    copyBtn.addEventListener("click", async () => {
+      const ok = await copyText(shareUrl());
+      copyBtn.textContent = ok ? "Copied!" : "Copy failed";
+      setTimeout(() => (copyBtn.textContent = "Copy Link"), 2000);
     });
 
-    return queue.join("&");
+    requestAnimationFrame(() => overlay.classList.add("show"));
+
+    const scoreEl = overlay.querySelector("#end-score");
+    const actions = overlay.querySelector("#end-actions");
+    setTimeout(() => {
+      const start = performance.now();
+      const duration = 2000;
+      const step = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        scoreEl.textContent = fmt(score * (1 - Math.pow(1 - t, 4)));
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          scoreEl.style.transform = "scale(1.12)";
+          setTimeout(() => (scoreEl.style.transform = ""), 250);
+          actions.classList.add("show");
+          overlay.querySelector("#end-again").focus({ preventScroll: true });
+        }
+      };
+      requestAnimationFrame(step);
+    }, 500);
   }
 
-  function syncSeedQueueWithUrl() {
-    const queueValue = getSeedQueueFromUrl();
-    if (queueValue) {
-      seedQueue = queueValue;
-      localStorage.setItem("seedQueue", queueValue);
-      return queueValue;
-    }
-
-    seedQueue = localStorage.getItem("seedQueue") || "";
-    if (!seedQueue) {
-      localStorage.removeItem("seedQueue");
-    }
-    return seedQueue;
-  }
-
-  async function getImageKeyFromSeed() {
-    const response = await fetch(`assets/images/locations/locations.json`);
-    if (!response.ok) throw new Error(`Error: ${response.status}`);
-    const data = await response.json();
-
-    const seedQueueValue = syncSeedQueueWithUrl();
-    const seedSequence = seedQueueValue ? seedQueueValue.split("&").filter(Boolean) : [];
-    const seed = seedSequence[0];
-    const parsedSeed = parseInt(seed, 10);
-
-    if (seedSequence.length > 1) {
-      isMultiplayer = true;
-      maxImages = seedSequence.length;
-      localStorage.removeItem("lastRandomImageKey");
-      localStorage.removeItem("bild2");
-      localStorage.removeItem("randomHistory");
-
-      const currentSeed = seedSequence[Math.max(0, imageRound - 1)] || seedSequence[0];
-      const currentSeedNumber = parseInt(currentSeed, 10);
-      const imageNumber = (currentSeedNumber - 123456) / 19;
-      const resolvedImageNumber = imageNumber / 137;
-      const imageKey = `img${resolvedImageNumber}`;
-      const keyedImage = data[imageKey] || data[`img${Math.round(resolvedImageNumber)}`];
-
-      if (keyedImage) {
-        seedForPlayingAgain = currentSeedNumber;
-        const [layer, x, y] = keyedImage.split("_");
-        layerImage = layer;
-        xImage = parseInt(x, 10);
-        yImage = parseInt(y, 10);
-        document.getElementById(
-          "location-image"
-        ).src = `assets/images/locations/${imageKey}.png`;
-      } else {
-        loadLocationData();
-      }
-    } else {
-      let imageNumber = (parsedSeed - 123456) / 19;
-      imageNumber = imageNumber / 137;
-      seedForPlayingAgain = parsedSeed;
-
-      if (imageNumber >= 1 && imageNumber <= 61) {
-        const imageKey = `img${imageNumber}`;
-        loadImage(imageKey);
-      } else {
-        loadLocationData();
-      }
-    }
-  }
-
-  async function loadImage(imageKey) {
-    const response = await fetch(`assets/images/locations/locations.json`);
-    if (!response.ok) throw new Error(`Error: ${response.status}`);
-    const data = await response.json();
-
-    const [layer, x, y] = data[imageKey].split("_");
-    layerImage = layer;
-    xImage = parseInt(x, 10);
-    yImage = parseInt(y, 10);
-
-    document.getElementById(
-      "location-image"
-    ).src = `assets/images/locations/${imageKey}.png`;
-  }
-
-  function checkValidUrl() {
-    const seedQueueValue = getSeedQueueFromUrl();
-
-    if (seedQueueValue) {
-      seedQueue = seedQueueValue;
-      localStorage.setItem("seedQueue", seedQueueValue);
-      getImageKeyFromSeed();
-    } else {
-      seedQueue = "";
-      localStorage.removeItem("seedQueue");
-      loadLocationData();
-    }
-  }
-
-function calculateScore(x, y, xImage, yImage) {
-    distance = Math.sqrt(Math.pow(x - xImage, 2) + Math.pow(y - yImage, 2));
-    const maxScore = 5000;
-    
-    if (distance <= 90) return { points: maxScore, distance };
-
-    const excessDistance = distance - 80;
-    const maxExcess = 1000 - 80; 
-
-    if (excessDistance >= maxExcess) {
-      const points = Math.max(Math.round(500 * (1 - (excessDistance - maxExcess) / 4000)), 0);
-      return { points, distance };
-    }
-    const dropOff = Math.pow(excessDistance / maxExcess, 0.85);
-    const points = Math.round(maxScore - (maxScore - 500) * dropOff);
-
-    return { points, distance };
-  }
-
-  function drawLine() {
-    lineLayer.clearLayers();
-    const line = L.polyline(
-      [
-        [y, x],
-        [yImage, xImage],
-      ],
-      { color: "red", weight: 2 }
-    );
-    lineLayer.addLayer(line).addTo(map);
-  }
-
-  function getResult() {
-    if (currentLayer !== layerImage) {
-      updateInnerHTMLWithAnimation(
-        "customMessage",
-        "Falsche Ebene :D"
+  async function init() {
+    els.stage.classList.add("loading");
+    let locations;
+    try {
+      locations = await TG.loadLocations();
+    } catch (err) {
+      console.error(err);
+      els.stage.classList.remove("loading");
+      setMessage(
+        '<span class="warn">Could not load the locations.</span>' +
+          "<span>If you opened the file directly, run it through a local web server.</span>"
       );
       return;
     }
 
-    drawLine();
-
-    const { points, distance } = calculateScore(x, y, xImage, yImage);
-    score += points;
-
-    document.getElementById(
-      "imageTurn"
-    ).innerHTML = `IMG: <span style="color: red;">${imageRound}</span>/${maxImages}`;
-    updateInnerHTMLWithAnimation("score", `SCORE: ${score}`);
-    updateInnerHTMLWithAnimation(
-      "customMessage",
-      `Distance: ${Math.round(
-        distance
-      )} Hm <br> <x style="color: #13fc03;">+${points}</x> points`
-    );
-  }
-
-  document.getElementById("submit-marker").addEventListener("click", () => {
-    if (!markerSet) return;
-
-    const buttonText = document.getElementById("submit-marker").innerText.trim().toUpperCase();
-
-    if (buttonText === "SUBMIT") {
-      finishMarker
-        .setLatLng([yImage, xImage])
-        .bindPopup(generateMarkerPopup("Korrekte Position", xImage, yImage))
-        .openPopup()
-        .addTo(map);
-
-      getResult();
-
-      const queueFromStorage = localStorage.getItem("seedQueue") || getSeedQueueFromUrl() || "";
-      const queueParts = queueFromStorage ? queueFromStorage.split("&").filter(Boolean) : [];
-      const nextSeed = String(seedForPlayingAgain ?? "");
-
-      if (nextSeed && !queueParts.includes(nextSeed)) {
-        queueParts.push(nextSeed);
-      }
-
-      const nextQueue = queueParts.join("&");
-      seedQueue = nextQueue;
-      localStorage.setItem("seedQueue", nextQueue);
-
-      totkMap.style.width = "80%";
-      totkMap.style.height = "90%";
-      totkMap.style.bottom = "6%";
-      map.setZoom(-3);
-      map.setView([2000, -5000], map.getZoom());
-
-      setTimeout(() => map.invalidateSize({ pan: false }), 300);
-      hoverableMap = false;
-
-      if (imageRound > maxImages - 1) {
-        document.getElementById("submit-marker").innerText = "VIEW RESULT";
+    const parts = TG.seedPartsFromUrl();
+    if (parts.length) {
+      const { rounds, invalid } = TG.resolveSeeds(parts, locations);
+      if (rounds.length) {
+        state.rounds = rounds.slice(0, TG.MAX_ROUNDS);
+        if (invalid.length) toast(`Ignored ${invalid.length} invalid seed value(s).`);
       } else {
-        document.getElementById("submit-marker").innerText = "NEXT IMAGE";
+        toast("That seed doesn't match any images – starting a random game.");
       }
-    } else if (buttonText === "NEXT IMAGE") {
-      if (imageRound < maxImages) {
-        imageRound++;
-      }
-      updateInnerHTMLWithAnimation("customMessage", "Where could this be?");
-      map.setZoom(-3);
-      map.setView([1800, -3450], map.getZoom());
-      loadNewImage();
-
-      if (window.resetImageZoom) {
-        window.resetImageZoom();
-      }
-
-      document.getElementById(
-        "imageTurn"
-      ).innerHTML = `IMG: <span style="color: red;">${imageRound}</span>/${maxImages}`;
-
-      document.getElementById("submit-marker").innerText = "SUBMIT";
-
-      markerSet = false;
-      document.getElementById("submit-marker").disabled = true;
-
-      cursorMarker.remove();
-      finishMarker.remove();
-      lineLayer.clearLayers();
-
-      const size = getMapSize();
-      totkMap.style.width = size.defaultWidth;
-      totkMap.style.height = size.defaultHeight;
-      totkMap.style.bottom = "12px";
-      setTimeout(() => map.invalidateSize({ pan: false }), 300);
-      hoverableMap = true;
-    } else if (buttonText === "VIEW RESULT") {
-      endGame();
     }
-  });
 
-  function loadNewImage() {
-    if (isMultiplayer) {
-      getImageKeyFromSeed();
+    if (state.rounds.length) {
+      state.difficulty = TG.difficultyForRounds(state.rounds);
     } else {
-      loadLocationData();
+      const settings = TG.getSettings();
+      state.difficulty = settings.difficulty;
+      state.rounds = TG.generateRounds(locations, settings.difficulty, settings.rounds);
+      TG.rememberPlayed(state.rounds);
     }
+
+    state.seedString = TG.joinSeeds(state.rounds.map((r) => TG.encodeSeed(r.n)));
+    try {
+      window.history.replaceState(null, "", `?seed=${state.seedString}`);
+    } catch {}
+
+    applyDifficulty();
+    restoreProgress();
+    state.displayedScore = totalScore();
+    els.score.textContent = fmt(state.displayedScore);
+
+    startRound();
+    showZoomHint();
+    preloadLayerOverviews();
   }
 
-  initializeMap();
-  checkValidUrl();
-  document.getElementById("submit-marker").disabled = true;
-});
-
-function updateInnerHTMLWithAnimation(elementId, newValue) {
-  const element = document.getElementById(elementId);
-  element.classList.remove("score-updated");
-  element.innerHTML = newValue;
-  void element.offsetWidth;
-  element.classList.add("score-updated");
-  setTimeout(() => element.classList.remove("score-updated"), 800);
-}
-
-function endGame() {
-  const totkMap = document.getElementById("totk-map");
-  const image = document.getElementById("location-image");
-  const sidebar = document.getElementById("sidebar");
-  const imageContainer = document.getElementById("image-container");
-
-  if (totkMap) {
-    totkMap.style.transition = "transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease";
-    totkMap.style.opacity = "0";
-    totkMap.style.transform = "scale(0.6) translateY(100px)";
-    totkMap.style.pointerEvents = "none";
-    setTimeout(() => totkMap.remove(), 1000);
-  }
-
-  if (sidebar) {
-    sidebar.style.transition = "all 1.2s cubic-bezier(0.16, 1, 0.3, 1)";
-    sidebar.style.opacity = "0";
-    sidebar.style.maxWidth = "0px";
-    sidebar.style.minWidth = "0px";
-    sidebar.style.width = "0px";
-    sidebar.style.paddingLeft = "0px";
-    sidebar.style.paddingRight = "0px";
-    sidebar.style.margin = "0px";
-    sidebar.style.overflow = "hidden";
-  }
-
-  if (imageContainer) {
-    imageContainer.style.transition = "all 1.2s cubic-bezier(0.16, 1, 0.3, 1)";
-    imageContainer.style.flex = "1 1 100%";
-    imageContainer.style.width = "100%";
-    imageContainer.style.borderRadius = "0px";
-  }
-
-  if (image) {
-    image.style.transition = "filter 1.5s ease, transform 1.5s cubic-bezier(0.16, 1, 0.3, 1)";
-    image.style.filter = "brightness(20%) blur(6px)";
-    image.style.transform = "scale(1.08)";
-  }
-
-  const overlay = document.createElement("div");
-  overlay.id = "end-game-overlay";
-  overlay.style.cssText = `
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    color: #fff;
-    font-family: inherit;
-    text-align: center;
-    pointer-events: auto;
-  `;
-
-  const maxPossibleScore = maxImages * 5000;
-  const percentage = (score / maxPossibleScore) * 100;
-  const difficultyLabel =
-    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-  const difficultyColor =
-    difficulty === "easy" ? "#11a832" : difficulty === "medium" ? "#facc15" : "#ff4d4d";
-
-  let rankTitle = "Hyrule Explorer";
-  let rankColor = "#e6c35c";
-
-  if (percentage >= 90) {
-    rankTitle = "HERO OF HYRULE";
-    rankColor = "#00f3ff";
-  } else if (percentage >= 70) {
-    rankTitle = "MASTER NAVIGATOR";
-    rankColor = "#50ff72";
-  } else if (percentage >= 40) {
-    rankTitle = "ADVENTURER";
-    rankColor = "#ffb830";
-  } else {
-    rankTitle = "LOST KOROK";
-    rankColor = "#ff4d4d";
-  }
-
-  const contentBox = document.createElement("div");
-  contentBox.style.cssText = `
-    background: rgba(8, 12, 16, 0.82);
-    border: 2px solid ${rankColor};
-    box-shadow: 0 0 40px ${rankColor}55, inset 0 0 20px ${rankColor}22;
-    padding: 45px 70px;
-    border-radius: 20px;
-    backdrop-filter: blur(12px);
-    transform: translateY(40px) scale(0.95);
-    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 90%;
-  `;
-
-  contentBox.innerHTML = `
-    <div style="font-size: 1.3rem; letter-spacing: 6px; text-transform: uppercase; color: ${rankColor}; margin-bottom: 12px; font-weight: 700;">${rankTitle}</div>
-    <div style="font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; color: ${difficultyColor}; margin-bottom: 18px; font-weight: 800; text-shadow: 0 0 12px ${difficultyColor}88;">Difficulty: ${difficultyLabel}</div>
-    <div id="end-score-title" style="font-size: 1.4rem; margin-bottom: 15px; color: #d1d5db; letter-spacing: 1px;">
-      Out of <span style="color: #0ba6d9; font-weight: bold;">${maxImages} Images</span> you got
-    </div>
-    <div id="end-score-number" style="font-size: 4.5rem; font-weight: 900; color: ${rankColor}; text-shadow: 0 0 25px ${rankColor}aa; line-height: 1;">
-      0
-    </div>
-    <div style="font-size: 1.1rem; color: #9ca3af; margin-top: 8px; margin-bottom: 35px; letter-spacing: 3px; font-weight: 600;">POINTS</div>
-  `;
-
-  const buttonDiv = document.createElement("div");
-  buttonDiv.style.cssText = `
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease 0.6s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
-  `;
-
-  const btnStyle = `
-    padding: 16px 32px;
-    font-size: 0.95rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  `;
-
-  const playAgainBtn = document.createElement("button");
-  playAgainBtn.textContent = "Play New Game";
-  playAgainBtn.style.cssText = btnStyle;
-  playAgainBtn.addEventListener("mouseover", () => {
-    playAgainBtn.style.background = rankColor;
-    playAgainBtn.style.color = "#000";
-    playAgainBtn.style.borderColor = rankColor;
-    playAgainBtn.style.boxShadow = `0 0 25px ${rankColor}aa`;
-    playAgainBtn.style.transform = "translateY(-3px)";
-  });
-  playAgainBtn.addEventListener("mouseout", () => {
-    playAgainBtn.style.background = "rgba(255, 255, 255, 0.06)";
-    playAgainBtn.style.color = "#fff";
-    playAgainBtn.style.borderColor = "rgba(255, 255, 255, 0.25)";
-    playAgainBtn.style.boxShadow = "0 10px 25px rgba(0, 0, 0, 0.4)";
-    playAgainBtn.style.transform = "translateY(0)";
-  });
-  playAgainBtn.addEventListener("click", () => {
-    window.location = window.location.href.split("?")[0];
-  });
-
-  const copySeedBtn = document.createElement("button");
-  copySeedBtn.textContent = "Copy Seed Link";
-  copySeedBtn.style.cssText = btnStyle;
-  copySeedBtn.addEventListener("mouseover", () => {
-    copySeedBtn.style.background = "#0ba6d9";
-    copySeedBtn.style.color = "#000";
-    copySeedBtn.style.borderColor = "#0ba6d9";
-    copySeedBtn.style.boxShadow = "0 0 25px #0ba6d9aa";
-    copySeedBtn.style.transform = "translateY(-3px)";
-  });
-  copySeedBtn.addEventListener("mouseout", () => {
-    copySeedBtn.style.background = "rgba(255, 255, 255, 0.06)";
-    copySeedBtn.style.color = "#fff";
-    copySeedBtn.style.borderColor = "rgba(255, 255, 255, 0.25)";
-    copySeedBtn.style.boxShadow = "0 10px 25px rgba(0, 0, 0, 0.4)";
-    copySeedBtn.style.transform = "translateY(0)";
-  });
-  copySeedBtn.addEventListener("click", () => {
-    const baseUrl = window.location.href.split('?')[0];
-    const seedQueue = localStorage.getItem("seedQueue") || getSeedQueueFromUrl() || "";
-    navigator.clipboard.writeText(`${baseUrl}?seed=${seedQueue}`);
-
-    copySeedBtn.textContent = "Copied!";
-    setTimeout(() => {
-      copySeedBtn.textContent = "Copy Seed Link";
-    }, 2000);
-  });
-
-  buttonDiv.appendChild(playAgainBtn);
-  buttonDiv.appendChild(copySeedBtn);
-  contentBox.appendChild(buttonDiv);
-  overlay.appendChild(contentBox);
-  imageContainer.appendChild(overlay);
-
-  setTimeout(() => {
-    overlay.style.opacity = "1";
-    contentBox.style.transform = "translateY(0) scale(1)";
-
-    const scoreElement = document.getElementById("end-score-number");
-    const duration = 2200;
-    const startTime = performance.now();
-
-    const animateNumber = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 4);
-      const currentVal = Math.floor(easeProgress * score);
-
-      scoreElement.textContent = currentVal.toLocaleString();
-
-      if (progress < 1) {
-        requestAnimationFrame(animateNumber);
-      } else {
-        scoreElement.textContent = score.toLocaleString();
-        scoreElement.style.transition = "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-        scoreElement.style.transform = "scale(1.12)";
-        setTimeout(() => {
-          scoreElement.style.transform = "scale(1)";
-        }, 250);
-
-        buttonDiv.style.opacity = "1";
-        buttonDiv.style.transform = "translateY(0)";
-      }
-    };
-
-    requestAnimationFrame(animateNumber);
-  }, 600);
-}
+  init();
+})();

@@ -1,0 +1,51 @@
+{
+  "name": "TotK Guesser",
+  "short_name": "TotK Guesser",
+  "description": "GeoGuessr for Hyrule – find screenshots from Tears of the Kingdom on the Surface, the Sky Islands and in the Depths.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "assets/images/icons/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick game",
+      "short_name": "Play",
+      "description": "Start a random game with your last settings",
+      "url": "./guess.html",
+      "icons": [{ "src": "assets/images/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
