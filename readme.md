@@ -97,6 +97,6 @@ TotK Guesser grew out of [HyruleGuessr](https://hyruleguessr.com), which is itse
 
 ## 📜 Credits
 
-Made by Max and Tobias. Maps are rendered with [Leaflet](https://leafletjs.com).
+Made by Maxas. Maps are rendered with [Leaflet](https://leafletjs.com).
 
 TotK Guesser is a non-commercial fan project. *The Legend of Zelda: Tears of the Kingdom* and all related assets are © Nintendo.
